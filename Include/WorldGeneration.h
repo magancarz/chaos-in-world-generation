@@ -1,7 +1,10 @@
 #pragma once
 
-class WorldGeneration
+namespace chs
 {
-public:
-    WorldGeneration() = default;
-};
+    class WorldGeneration
+    {
+    public:
+        WorldGeneration() = default;
+    };
+}

@@ -2,7 +2,7 @@
 
 int main()
 {
-    WorldGeneration world_generation{};
+    chs::WorldGeneration world_generation{};
 
     return 0;
 }
