@@ -22,11 +22,34 @@
 
 #pragma once
 
+#include <vector>
+
+#include "FastNoiseLite/Cpp/FastNoiseLite.h"
+
 namespace chs
 {
     class WorldGeneration
     {
     public:
-        WorldGeneration() = default;
+        WorldGeneration();
+
+        // TODO: allow user to pass previously allocated memory
+        std::vector<float> generate();
+
+        static constexpr unsigned int MAX_WIDTH_VALUE{4096};
+        static constexpr unsigned int MAX_HEIGHT_VALUE{4096};
+
+        void setWidth(unsigned int value) { width = value; }
+        void setHeight(unsigned int value) { height = value; }
+        void setSeed(unsigned int value) { seed = value; }
+
+        void setOctaves(unsigned int value) { noise.SetFractalOctaves(value); }
+
+    private:
+        FastNoiseLite noise;
+
+        unsigned int width{64};
+        unsigned int height{64};
+        unsigned int seed{2025};
     };
 }
