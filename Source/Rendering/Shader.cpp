@@ -30,7 +30,8 @@
 namespace chs
 {
     Shader::Shader(const ShaderSettings& shader_settings)
-        : shader_program_id{createShaderProgram(shader_settings)} {}
+        : shader_program_id{createShaderProgram(shader_settings)},
+        uniform_locations{findAllRequiredUniformLocations(shader_settings)} {}
 
     int Shader::createShaderProgram(const ShaderSettings& shader_settings) const
     {
@@ -79,6 +80,26 @@ namespace chs
         return shader_id;
     }
 
+    std::unordered_map<const char*, int> Shader::findAllRequiredUniformLocations(const ShaderSettings& shader_settings)
+    {
+        std::unordered_map<const char*, int> uniform_locations{};
+        for (const auto& uniform_variable_name : shader_settings.uniform_variables)
+        {
+            assert(!uniform_locations.contains(uniform_variable_name));
+            uniform_locations.emplace(uniform_variable_name, findUniformLocation(uniform_variable_name));
+        }
+
+        return uniform_locations;
+    }
+
+    int Shader::findUniformLocation(const char* uniform_variable_name)
+    {
+        int uniform_location = glGetUniformLocation(shader_program_id, uniform_variable_name);
+        assert(uniform_location != INVALID_UNIFORM_LOCATION && "Unable to get uniform location");
+
+        return uniform_location;
+    }
+
     Shader::~Shader()
     {
         GL_CHECK(glDeleteProgram(shader_program_id));
@@ -98,5 +119,13 @@ namespace chs
     {
         GL_CHECK(glActiveTexture(GL_TEXTURE0 + slot));
         texture.bind();
+    }
+
+    void Shader::loadMatrix(const char* uniform_name, const glm::mat4& matrix)
+    {
+        assert(uniform_locations.contains(uniform_name) && "Uniform variable must be present in shader");
+        int uniform_location = uniform_locations.at(uniform_name);
+        static constexpr GLenum DONT_TRANSPOSE{GL_FALSE};
+        GL_CHECK(glUniformMatrix4fv(uniform_location, 1, DONT_TRANSPOSE, &matrix[0][0]));
     }
 }

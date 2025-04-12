@@ -33,6 +33,6 @@ namespace chs
     {
         ShaderCode vertex_shader_code;
         ShaderCode fragment_shader_code;
-        unsigned int num_of_texture_samplers{0};
+        std::vector<const char*> uniform_variables;
     };
 }

@@ -25,6 +25,7 @@
 #include <limits>
 
 #include <GL/glew.h>
+#include <glm/glm.hpp>
 
 #include "ShaderSettings.h"
 #include "ShaderCode.h"
@@ -43,6 +44,8 @@ namespace chs
 
         void bindTexture(unsigned int slot, const Texture& texture) const;
 
+        void loadMatrix(const char* uniform_name, const glm::mat4& matrix);
+
     private:
         int createShaderProgram(const ShaderSettings& shader_settings) const;
         int createShader(const ShaderCode& shader_code, GLenum shader_type) const;
@@ -50,5 +53,12 @@ namespace chs
         static constexpr unsigned int INVALID_SHADER_ID{0};
 
         unsigned int shader_program_id{INVALID_SHADER_ID};
+
+        std::unordered_map<const char*, int> findAllRequiredUniformLocations(const ShaderSettings& shader_settings);
+        int findUniformLocation(const char* uniform_variable_name);
+
+        static constexpr int INVALID_UNIFORM_LOCATION{-1};
+
+        std::unordered_map<const char*, int> uniform_locations;
     };
 }
