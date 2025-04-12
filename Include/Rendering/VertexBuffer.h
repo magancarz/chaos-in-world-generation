@@ -29,7 +29,7 @@ namespace chs
     class VertexBuffer
     {
     public:
-        VertexBuffer(int instance_count, int instance_size, int attribute_size);
+        VertexBuffer();
         ~VertexBuffer();
 
         VertexBuffer(const VertexBuffer&) = delete;
@@ -37,21 +37,14 @@ namespace chs
         VertexBuffer(VertexBuffer&& other) noexcept;
         VertexBuffer& operator=(VertexBuffer&& other) noexcept;
 
-        void bindData(void* data) const;
+        void bindData(int size, void* data);
 
         void bind() const;
         void unbind() const;
 
-        int getInstanceCount() const { return instance_count; }
-        int getInstanceSize() const { return instance_size; }
-        int getAttributeSize() const { return attribute_size; }
+        int getBufferSize() const { return buffer_size; }
 
-        bool valid() const
-        {
-            return vertex_buffer != INVALID_VERTEX_BUFFER &&
-                instance_count != 0 &&
-                instance_size != 0 &&
-                attribute_size != 0;}
+        bool valid() const { return vertex_buffer != INVALID_VERTEX_BUFFER && buffer_size != 0; }
 
     private:
         static constexpr unsigned int INVALID_VERTEX_BUFFER{0};
@@ -60,8 +53,6 @@ namespace chs
 
         unsigned int vertex_buffer{INVALID_VERTEX_BUFFER};
 
-        int instance_count{0};
-        int instance_size{0};
-        int attribute_size{0};
+        int buffer_size{0};
     };
 }

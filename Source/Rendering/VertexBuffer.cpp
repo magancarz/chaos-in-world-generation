@@ -30,22 +30,17 @@
 
 namespace chs
 {
-    VertexBuffer::VertexBuffer(int instance_count, int instance_size, int attribute_size)
-        : instance_count{instance_count}, instance_size{instance_size}, attribute_size{attribute_size}
+    VertexBuffer::VertexBuffer()
     {
         GL_CHECK(glGenBuffers(1, &vertex_buffer));
     }
 
     VertexBuffer::VertexBuffer(VertexBuffer&& other) noexcept
         : vertex_buffer{other.vertex_buffer},
-        instance_count{other.instance_count},
-        instance_size{other.instance_size},
-        attribute_size{other.attribute_size}
+        buffer_size{other.buffer_size}
     {
         other.vertex_buffer = 0;
-        other.instance_count = 0;
-        other.instance_size = 0;
-        other.attribute_size = 0;
+        other.buffer_size = 0;
     }
 
     VertexBuffer& VertexBuffer::operator=(VertexBuffer&& other) noexcept
@@ -55,14 +50,10 @@ namespace chs
             deleteVertexBufferObjectIfNeeded();
 
             vertex_buffer = other.vertex_buffer;
-            instance_count = other.instance_count;
-            instance_size = other.instance_size;
-            attribute_size = other.attribute_size;
+            buffer_size = other.buffer_size;
 
             other.vertex_buffer = 0;
-            other.instance_count = 0;
-            other.instance_size = 0;
-            other.attribute_size = 0;
+            other.buffer_size = 0;
         }
 
         return *this;
@@ -82,10 +73,11 @@ namespace chs
         deleteVertexBufferObjectIfNeeded();
     }
 
-    void VertexBuffer::bindData(void* data) const
+    void VertexBuffer::bindData(int size, void* data)
     {
+        buffer_size = size;
         bind();
-        GL_CHECK(glBufferData(GL_ARRAY_BUFFER, instance_count * instance_size, data, GL_STATIC_DRAW));
+        GL_CHECK(glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW));
         unbind();
     }
 

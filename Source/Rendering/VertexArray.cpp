@@ -31,13 +31,13 @@
 namespace chs
 {
     VertexArray::VertexArray(
-            std::vector<VertexBuffer> vertex_buffers,
+            const std::vector<VertexArrayEntry>& vertex_array_entries,
             unsigned int num_of_vertices)
         : vertex_array{createVertexArrayObject()},
-        vertex_buffers{std::move(vertex_buffers)},
+        num_of_array_entries{static_cast<unsigned int>(vertex_array_entries.size())},
         num_of_vertices{num_of_vertices}
     {
-        bindEachVertexArrayEntry(this->vertex_buffers);
+        bindEachVertexArrayEntry(vertex_array_entries);
     }
 
     unsigned int VertexArray::createVertexArrayObject() const
@@ -48,24 +48,22 @@ namespace chs
         return id;
     }
 
-    void VertexArray::bindEachVertexArrayEntry(const std::vector<VertexBuffer>& vertex_buffers_to_bind) const
+    void VertexArray::bindEachVertexArrayEntry(const std::vector<VertexArrayEntry>& vertex_array_entries) const
     {
         GL_CHECK(glBindVertexArray(vertex_array));
-        for (unsigned int index = 0; index < static_cast<unsigned int>(vertex_buffers_to_bind.size()); ++index)
+        for (unsigned int index = 0; index < static_cast<unsigned int>(vertex_array_entries.size()); ++index)
         {
-            bindVertexArrayEntry(index, vertex_buffers_to_bind.at(index));
+            bindVertexArrayEntry(index, vertex_array_entries.at(index));
         }
         GL_CHECK(glBindVertexArray(INVALID_VERTEX_ARRAY));
     }
 
-    void VertexArray::bindVertexArrayEntry(unsigned int attribute_index, const VertexBuffer& vertex_buffer) const
+    void VertexArray::bindVertexArrayEntry(unsigned int attribute_index, const VertexArrayEntry& vertex_array_entry) const
     {
         static constexpr bool NOT_NORMALIZED{false};
-        static constexpr int STRIDE{0};
-        static constexpr const void* const FIRST_ELEMENT_OFFSET{nullptr};
-        vertex_buffer.bind();
-        GL_CHECK(glVertexAttribPointer(attribute_index, vertex_buffer.getAttributeSize(), GL_FLOAT, NOT_NORMALIZED, STRIDE, FIRST_ELEMENT_OFFSET));
-        vertex_buffer.unbind();
+        vertex_array_entry.source_buffer->bind();
+        GL_CHECK(glVertexAttribPointer(attribute_index, vertex_array_entry.attribute_size, GL_FLOAT, NOT_NORMALIZED, vertex_array_entry.instance_stride, (void*)vertex_array_entry.instance_offset));
+        vertex_array_entry.source_buffer->unbind();
     }
 
     VertexArray::~VertexArray()
@@ -75,9 +73,8 @@ namespace chs
 
     void VertexArray::bind() const
     {
-        assert(vertex_buffers.size() > 0 && "Something went wrong");
         GL_CHECK(glBindVertexArray(vertex_array));
-        for (unsigned int attribute_index = 0; attribute_index < vertex_buffers.size(); ++attribute_index)
+        for (unsigned int attribute_index = 0; attribute_index < num_of_array_entries; ++attribute_index)
         {
             GL_CHECK(glEnableVertexAttribArray(attribute_index));
         }
@@ -91,8 +88,7 @@ namespace chs
 
     void VertexArray::unbind() const
     {
-        assert(vertex_buffers.size() > 0 && "Something went wrong");
-        for (unsigned int attribute_index = 0; attribute_index < vertex_buffers.size(); ++attribute_index)
+        for (unsigned int attribute_index = 0; attribute_index < num_of_array_entries; ++attribute_index)
         {
             GL_CHECK(glDisableVertexAttribArray(attribute_index));
         }

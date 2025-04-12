@@ -25,7 +25,7 @@
 #include <vector>
 #include <limits>
 
-#include "Rendering/VertexBuffer.h"
+#include "Rendering/VertexArrayEntry.h"
 
 namespace chs
 {
@@ -33,7 +33,7 @@ namespace chs
     {
     public:
         explicit VertexArray(
-            std::vector<VertexBuffer> vertex_buffers,
+            const std::vector<VertexArrayEntry>& vertex_buffers,
             unsigned int num_of_vertices);
         ~VertexArray();
 
@@ -43,13 +43,12 @@ namespace chs
 
     private:
         unsigned int createVertexArrayObject() const;
-        void bindEachVertexArrayEntry(const std::vector<VertexBuffer>& vertex_buffers) const;
-        void bindVertexArrayEntry(unsigned int attribute_index, const VertexBuffer& vertex_buffer) const;
+        void bindEachVertexArrayEntry(const std::vector<VertexArrayEntry>& vertex_array_entries) const;
+        void bindVertexArrayEntry(unsigned int attribute_index, const VertexArrayEntry& vertex_array_entry) const;
 
         static constexpr unsigned int INVALID_VERTEX_ARRAY{0};
         unsigned int vertex_array{INVALID_VERTEX_ARRAY};
-
-        std::vector<VertexBuffer> vertex_buffers;
+        unsigned int num_of_array_entries{0};
         unsigned int num_of_vertices{0};
     };
 }

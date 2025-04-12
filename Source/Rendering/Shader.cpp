@@ -91,6 +91,12 @@ namespace chs
 
     void Shader::unbind() const
     {
-        glUseProgram(INVALID_SHADER_ID);
+        GL_CHECK(glUseProgram(INVALID_SHADER_ID));
+    }
+
+    void Shader::bindTexture(unsigned int slot, const Texture& texture) const
+    {
+        GL_CHECK(glActiveTexture(GL_TEXTURE0 + slot));
+        texture.bind();
     }
 }

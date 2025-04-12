@@ -22,33 +22,15 @@
 
 #pragma once
 
-#include <limits>
-
-#include <GL/glew.h>
-
-#include "ShaderSettings.h"
-#include "ShaderCode.h"
-#include "Rendering/Texture.h"
+#include "Rendering/VertexBuffer.h"
 
 namespace chs
 {
-    class Shader
+    struct VertexArrayEntry
     {
-    public:
-        explicit Shader(const ShaderSettings& shader_settings);
-        virtual ~Shader();
-        
-        void bind() const;
-        void unbind() const;
-
-        void bindTexture(unsigned int slot, const Texture& texture) const;
-
-    private:
-        int createShaderProgram(const ShaderSettings& shader_settings) const;
-        int createShader(const ShaderCode& shader_code, GLenum shader_type) const;
-
-        static constexpr unsigned int INVALID_SHADER_ID{0};
-
-        unsigned int shader_program_id{INVALID_SHADER_ID};
+        VertexBuffer* source_buffer{nullptr};
+        int attribute_size{0};
+        int instance_offset{0};
+        int instance_stride{0};
     };
 }

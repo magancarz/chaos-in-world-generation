@@ -24,31 +24,30 @@
 
 #include <limits>
 
-#include <GL/glew.h>
-
-#include "ShaderSettings.h"
-#include "ShaderCode.h"
-#include "Rendering/Texture.h"
-
 namespace chs
 {
-    class Shader
+    class Texture
     {
     public:
-        explicit Shader(const ShaderSettings& shader_settings);
-        virtual ~Shader();
-        
+        Texture();
+        ~Texture();
+
+        Texture(const Texture&) = delete;
+        Texture& operator=(const Texture&) = delete;
+        Texture(Texture&& other) noexcept;
+        Texture& operator=(Texture&& other) noexcept;
+
+        void bindData(unsigned int width, unsigned int height, const void* data) const;
+
         void bind() const;
         void unbind() const;
 
-        void bindTexture(unsigned int slot, const Texture& texture) const;
-
     private:
-        int createShaderProgram(const ShaderSettings& shader_settings) const;
-        int createShader(const ShaderCode& shader_code, GLenum shader_type) const;
+        static constexpr unsigned int INVALID_TEXTURE{0};
 
-        static constexpr unsigned int INVALID_SHADER_ID{0};
+        unsigned int createTextureObject() const;
+        void deleteTextureObjectIfNeeded();
 
-        unsigned int shader_program_id{INVALID_SHADER_ID};
+        unsigned int texture{INVALID_TEXTURE};
     };
 }
