@@ -75,9 +75,10 @@ namespace chs
     {
         glfwPollEvents();
         glfwGetFramebufferSize(window, &width, &height);
+        glEnable(GL_DEPTH_TEST);
         glViewport(0, 0, width, height);
         glClearColor(CLEAR_COLOR_RED, CLEAR_COLOR_GREEN, CLEAR_COLOR_BLUE, CLEAR_COLOR_ALPHA);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
 
     void Window::finalizeFrame()
