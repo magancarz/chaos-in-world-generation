@@ -16,7 +16,8 @@ add_subdirectory(ThirdParty)
 
 target_link_libraries(chaos-in-world-generation-lib
     OpenGL::GL
-    glfw)
+    glfw
+    glm::glm)
 
 target_include_directories(chaos-in-world-generation-lib PUBLIC Include)
 target_include_directories(chaos-in-world-generation-lib PUBLIC ThirdParty)
