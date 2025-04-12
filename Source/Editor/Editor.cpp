@@ -55,24 +55,23 @@ namespace chs
     {
         beginNewFrame();
         updateGUIElements();
-        finalizeFrame();
     }
 
-    void Editor::beginNewFrame()
+    void Editor::beginNewFrame() const
     {
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
     }
 
-    void Editor::updateGUIElements()
+    void Editor::updateGUIElements() const
     {
         ImGui::Begin("World Generation Settings");
 
         ImGui::End();
     }
 
-    void Editor::finalizeFrame()
+    void Editor::drawGUI() const
     {
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

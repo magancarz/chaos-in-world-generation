@@ -33,12 +33,12 @@ namespace chs
         ~Editor();
 
         void updateGUI();
+        void drawGUI() const;
 
     private:
         void initializeGraphicalInterface(Window& window);
     
-        void beginNewFrame();
-        void updateGUIElements();
-        void finalizeFrame();
+        void beginNewFrame() const;
+        void updateGUIElements() const;
     };
 }
