@@ -22,6 +22,8 @@
 
 #include "Editor/Editor.h"
 
+#include <string>
+
 #include "imgui/imgui_impl_glfw.h"
 #include "imgui/imgui_impl_opengl3.h"
 
@@ -51,10 +53,10 @@ namespace chs
         ImGui::DestroyContext();
     }
 
-    void Editor::updateGUI()
+    void Editor::updateGUI(WorldGenerationSettings& world_generation_settings)
     {
         beginNewFrame();
-        updateGUIElements();
+        updateGUIElements(world_generation_settings);
     }
 
     void Editor::beginNewFrame() const
@@ -64,9 +66,19 @@ namespace chs
         ImGui::NewFrame();
     }
 
-    void Editor::updateGUIElements() const
+    void Editor::updateGUIElements(WorldGenerationSettings& world_generation_settings) const
     {
         ImGui::Begin("World Generation Settings");
+
+        if (ImGui::SliderFloat("X Offset", &world_generation_settings.x_coordinate_offset, -100.0f, 100.0f))
+        {
+            world_generation_settings.settings_updated = true;
+        }
+
+        if (ImGui::SliderFloat("Y Offset", &world_generation_settings.y_coordinate_offset, -100.0f, 100.0f))
+        {
+            world_generation_settings.settings_updated = true;
+        }
 
         ImGui::End();
     }

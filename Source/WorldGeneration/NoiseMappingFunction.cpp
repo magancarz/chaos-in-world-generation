@@ -20,42 +20,40 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#pragma once
+#include "WorldGeneration/NoiseMappingFunction.h"
 
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
+#include <cstdio>
+
+#include "glm/common.hpp"
 
 namespace chs
 {
-    class Window
+    NoiseMappingFunction::NoiseMappingFunction(std::vector<MappingInterval> mapping_intervals)
+        : mapping_intervals{std::move(mapping_intervals)} {}
+
+    float NoiseMappingFunction::map(float noise_value)
     {
-    public:
-        static constexpr int DEFAULT_WINDOW_WIDTH{1280};
-        static constexpr int DEFAULT_WINDOW_HEIGHT{800};
-        static constexpr const char* DEFAULT_WINDOW_TITLE{"Chaos in world generation"};
+        if (mapping_intervals.empty())
+        {
+            return noise_value;
+        }
 
-        Window(int width = DEFAULT_WINDOW_WIDTH, int height = DEFAULT_WINDOW_HEIGHT);
-        ~Window();
+        int valid_mapping_interval_index = 0;
+        for (; valid_mapping_interval_index < mapping_intervals.size(); ++valid_mapping_interval_index)
+        {
+            if (mapping_intervals[valid_mapping_interval_index].starting_x > noise_value)
+            {
+                valid_mapping_interval_index = valid_mapping_interval_index - 1;
+                break;
+            }
+        }
 
-        void beginNewFrame();
-        void finalizeFrame();
+        if (valid_mapping_interval_index < 0)
+        {
+            return noise_value;
+        }
 
-        bool closeRequested() const { return glfwWindowShouldClose(window); }
-
-        GLFWwindow* getGLFWwindow() const { return window; }
-        float getAspect() const { return static_cast<float>(width) / static_cast<float>(height); }
-
-    private:
-        static constexpr float CLEAR_COLOR_RED{0.1f};
-        static constexpr float CLEAR_COLOR_GREEN{0.1f};
-        static constexpr float CLEAR_COLOR_BLUE{0.1f};
-        static constexpr float CLEAR_COLOR_ALPHA{1.0f};
-
-        int width;
-        int height;
-
-        GLFWwindow* initializeGLFWWindow();
-
-        GLFWwindow* window{nullptr};
-    };
+        MappingInterval& mapping_interval = mapping_intervals[valid_mapping_interval_index];
+        return mapping_interval.coefficients.a * noise_value + mapping_interval.coefficients.b;
+    }
 }

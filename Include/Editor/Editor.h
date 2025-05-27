@@ -23,6 +23,7 @@
 #pragma once
 
 #include "Window/Window.h"
+#include "WorldGeneration/WorldGenerationSettings.h"
 
 namespace chs
 {
@@ -32,13 +33,13 @@ namespace chs
         explicit Editor(Window& window);
         ~Editor();
 
-        void updateGUI();
+        void updateGUI(WorldGenerationSettings& world_generation_settings);
         void drawGUI() const;
 
     private:
         void initializeGraphicalInterface(Window& window);
     
         void beginNewFrame() const;
-        void updateGUIElements() const;
+        void updateGUIElements(WorldGenerationSettings& world_generation_settings) const;
     };
 }

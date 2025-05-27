@@ -20,42 +20,32 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#pragma once
+#include "WorldGeneration/CoefficientsCalculator.h"
 
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
+#include "glm/ext/scalar_constants.hpp"
 
 namespace chs
 {
-    class Window
+    std::vector<Coefficients> CoefficientsCalculator::calculate(const std::vector<Spline>& splines)
     {
-    public:
-        static constexpr int DEFAULT_WINDOW_WIDTH{1280};
-        static constexpr int DEFAULT_WINDOW_HEIGHT{800};
-        static constexpr const char* DEFAULT_WINDOW_TITLE{"Chaos in world generation"};
+        std::vector<Coefficients> result_coefficients;
+        result_coefficients.resize(splines.size());
 
-        Window(int width = DEFAULT_WINDOW_WIDTH, int height = DEFAULT_WINDOW_HEIGHT);
-        ~Window();
+        for (unsigned int current_spline_index = 0; current_spline_index < splines.size() - 1; ++current_spline_index)
+        {
+            const Spline& first_spline = splines.at(current_spline_index);
+            const Spline& second_spline = splines.at(current_spline_index + 1);
 
-        void beginNewFrame();
-        void finalizeFrame();
+            float dx = second_spline.x - first_spline.x;
+            float dy = second_spline.y - first_spline.y;
 
-        bool closeRequested() const { return glfwWindowShouldClose(window); }
+            if (dx <= glm::epsilon<float>()) dx += glm::epsilon<float>();
 
-        GLFWwindow* getGLFWwindow() const { return window; }
-        float getAspect() const { return static_cast<float>(width) / static_cast<float>(height); }
+            Coefficients& coefficients = result_coefficients.at(current_spline_index);
+            coefficients.a = dy / dx;
+            coefficients.b = first_spline.y - coefficients.a * first_spline.x;
+        }
 
-    private:
-        static constexpr float CLEAR_COLOR_RED{0.1f};
-        static constexpr float CLEAR_COLOR_GREEN{0.1f};
-        static constexpr float CLEAR_COLOR_BLUE{0.1f};
-        static constexpr float CLEAR_COLOR_ALPHA{1.0f};
-
-        int width;
-        int height;
-
-        GLFWwindow* initializeGLFWWindow();
-
-        GLFWwindow* window{nullptr};
-    };
+        return result_coefficients;
+    }
 }

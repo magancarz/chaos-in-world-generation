@@ -22,40 +22,29 @@
 
 #pragma once
 
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
+#include <string>
+
+#include "CodeBuilder.h"
+#include "NoiseMappingFunction.h"
 
 namespace chs
 {
-    class Window
+    class GLSLCodeGenerator
     {
     public:
-        static constexpr int DEFAULT_WINDOW_WIDTH{1280};
-        static constexpr int DEFAULT_WINDOW_HEIGHT{800};
-        static constexpr const char* DEFAULT_WINDOW_TITLE{"Chaos in world generation"};
+        explicit GLSLCodeGenerator(const NoiseMappingFunction& noise_mapping_function);
 
-        Window(int width = DEFAULT_WINDOW_WIDTH, int height = DEFAULT_WINDOW_HEIGHT);
-        ~Window();
-
-        void beginNewFrame();
-        void finalizeFrame();
-
-        bool closeRequested() const { return glfwWindowShouldClose(window); }
-
-        GLFWwindow* getGLFWwindow() const { return window; }
-        float getAspect() const { return static_cast<float>(width) / static_cast<float>(height); }
+        std::string generate();
 
     private:
-        static constexpr float CLEAR_COLOR_RED{0.1f};
-        static constexpr float CLEAR_COLOR_GREEN{0.1f};
-        static constexpr float CLEAR_COLOR_BLUE{0.1f};
-        static constexpr float CLEAR_COLOR_ALPHA{1.0f};
+        const NoiseMappingFunction& noise_mapping_function;
+        CodeBuilder code_builder{};
 
-        int width;
-        int height;
+        std::string function_name{"noiseMapping"};
 
-        GLFWwindow* initializeGLFWWindow();
-
-        GLFWwindow* window{nullptr};
+        void generateFunctionOpening();
+        void generateCodeForMappingInterval(const MappingInterval& mapping_interval);
+        void generateCodeForLastMappingInterval(const MappingInterval& mapping_interval);
+        void generateFunctionClosure();
     };
 }

@@ -22,40 +22,24 @@
 
 #pragma once
 
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
+#include <vector>
+
+#include "MappingInterval.h"
 
 namespace chs
 {
-    class Window
+    class GLSLCodeGenerator;
+
+    class NoiseMappingFunction
     {
     public:
-        static constexpr int DEFAULT_WINDOW_WIDTH{1280};
-        static constexpr int DEFAULT_WINDOW_HEIGHT{800};
-        static constexpr const char* DEFAULT_WINDOW_TITLE{"Chaos in world generation"};
+        explicit NoiseMappingFunction(std::vector<MappingInterval> mapping_intervals);
 
-        Window(int width = DEFAULT_WINDOW_WIDTH, int height = DEFAULT_WINDOW_HEIGHT);
-        ~Window();
-
-        void beginNewFrame();
-        void finalizeFrame();
-
-        bool closeRequested() const { return glfwWindowShouldClose(window); }
-
-        GLFWwindow* getGLFWwindow() const { return window; }
-        float getAspect() const { return static_cast<float>(width) / static_cast<float>(height); }
+        float map(float noise_value);
 
     private:
-        static constexpr float CLEAR_COLOR_RED{0.1f};
-        static constexpr float CLEAR_COLOR_GREEN{0.1f};
-        static constexpr float CLEAR_COLOR_BLUE{0.1f};
-        static constexpr float CLEAR_COLOR_ALPHA{1.0f};
+        std::vector<MappingInterval> mapping_intervals;
 
-        int width;
-        int height;
-
-        GLFWwindow* initializeGLFWWindow();
-
-        GLFWwindow* window{nullptr};
+        friend GLSLCodeGenerator;
     };
 }

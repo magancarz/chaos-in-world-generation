@@ -25,6 +25,9 @@
 #include <vector>
 
 #include "FastNoiseLite/Cpp/FastNoiseLite.h"
+#include <glm/glm.hpp>
+
+#include "WorldGeneration/WorldGenerationSettings.h"
 
 namespace chs
 {
@@ -33,8 +36,7 @@ namespace chs
     public:
         WorldGeneration();
 
-        // TODO: allow user to pass previously allocated memory
-        std::vector<float> generate();
+        std::vector<glm::vec4> generate(const WorldGenerationSettings& world_generation_settings);
 
         static constexpr unsigned int MAX_WIDTH_VALUE{4096};
         static constexpr unsigned int MAX_HEIGHT_VALUE{4096};
