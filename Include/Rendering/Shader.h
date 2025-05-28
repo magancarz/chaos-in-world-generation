@@ -49,10 +49,11 @@ namespace chs
     private:
         int createShaderProgram(const ShaderSettings& shader_settings) const;
         int createShader(const ShaderCode& shader_code, GLenum shader_type) const;
+        void checkProgramLinkingErrors(int shader_program_id) const;
 
-        static constexpr unsigned int INVALID_SHADER_ID{0};
+        static constexpr int INVALID_SHADER_ID{0};
 
-        unsigned int shader_program_id{INVALID_SHADER_ID};
+        int shader_program_id{INVALID_SHADER_ID};
 
         std::unordered_map<const char*, int> findAllRequiredUniformLocations(const ShaderSettings& shader_settings);
         int findUniformLocation(const char* uniform_variable_name);

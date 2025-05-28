@@ -23,7 +23,6 @@
 #pragma once
 
 #include <vector>
-#include <limits>
 
 #include "Rendering/VertexArrayEntry.h"
 
@@ -34,7 +33,7 @@ namespace chs
     public:
         explicit VertexArray(
             const std::vector<VertexArrayEntry>& vertex_buffers,
-            unsigned int num_of_vertices);
+            unsigned int num_of_patches);
         ~VertexArray();
 
         void bind() const;
@@ -42,13 +41,13 @@ namespace chs
         void unbind() const;
 
     private:
-        unsigned int createVertexArrayObject() const;
+        [[nodiscard]] unsigned int createVertexArrayObject() const;
         void bindEachVertexArrayEntry(const std::vector<VertexArrayEntry>& vertex_array_entries) const;
         void bindVertexArrayEntry(unsigned int attribute_index, const VertexArrayEntry& vertex_array_entry) const;
 
         static constexpr unsigned int INVALID_VERTEX_ARRAY{0};
         unsigned int vertex_array{INVALID_VERTEX_ARRAY};
         unsigned int num_of_array_entries{0};
-        unsigned int num_of_vertices{0};
+        unsigned int num_of_patches{0};
     };
 }

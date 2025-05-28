@@ -37,14 +37,14 @@ namespace chs
         VertexBuffer(VertexBuffer&& other) noexcept;
         VertexBuffer& operator=(VertexBuffer&& other) noexcept;
 
-        void bindData(int size, void* data);
+        void bindData(std::size_t size, void* data);
 
         void bind() const;
         void unbind() const;
 
-        int getBufferSize() const { return buffer_size; }
+        [[nodiscard]] std::size_t getBufferSize() const { return buffer_size; }
 
-        bool valid() const { return vertex_buffer != INVALID_VERTEX_BUFFER && buffer_size != 0; }
+        [[nodiscard]] bool valid() const { return vertex_buffer != INVALID_VERTEX_BUFFER && buffer_size != 0; }
 
     private:
         static constexpr unsigned int INVALID_VERTEX_BUFFER{0};
@@ -53,6 +53,6 @@ namespace chs
 
         unsigned int vertex_buffer{INVALID_VERTEX_BUFFER};
 
-        int buffer_size{0};
+        std::size_t buffer_size{0};
     };
 }

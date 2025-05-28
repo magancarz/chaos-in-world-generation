@@ -73,7 +73,7 @@ namespace chs
         deleteVertexBufferObjectIfNeeded();
     }
 
-    void VertexBuffer::bindData(int size, void* data)
+    void VertexBuffer::bindData(std::size_t size, void* data)
     {
         buffer_size = size;
         bind();

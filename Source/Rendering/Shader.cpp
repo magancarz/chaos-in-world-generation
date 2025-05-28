@@ -22,7 +22,6 @@
 
 #include "Rendering/Shader.h"
 
-#include <unordered_set>
 #include <cassert>
 
 #include "Rendering/DebugUtils.h"
@@ -31,11 +30,11 @@ namespace chs
 {
     Shader::Shader(const ShaderSettings& shader_settings)
         : shader_program_id{createShaderProgram(shader_settings)},
-        uniform_locations{findAllRequiredUniformLocations(shader_settings)} {}
+    uniform_locations{findAllRequiredUniformLocations(shader_settings)} {}
 
     int Shader::createShaderProgram(const ShaderSettings& shader_settings) const
     {
-        unsigned int program_id = glCreateProgram();
+        int program_id = glCreateProgram();
 
         const unsigned int vertex_shader_id = createShader(shader_settings.vertex_shader_code, GL_VERTEX_SHADER);
         assert(vertex_shader_id != INVALID_SHADER_ID);
@@ -44,8 +43,17 @@ namespace chs
         const unsigned int fragment_shader_id = createShader(shader_settings.fragment_shader_code, GL_FRAGMENT_SHADER);
         assert(fragment_shader_id != INVALID_SHADER_ID);
         GL_CHECK(glAttachShader(program_id, fragment_shader_id));
-        
+
+        const int tesselation_control_shader_id = createShader(shader_settings.tesselation_control_shader_code, GL_TESS_CONTROL_SHADER);
+        assert(tesselation_control_shader_id != INVALID_SHADER_ID);
+        GL_CHECK(glAttachShader(program_id, tesselation_control_shader_id));
+
+        const int tesselation_evaluation_shader_id = createShader(shader_settings.tesselation_evaluation_shader_code, GL_TESS_EVALUATION_SHADER);
+        assert(tesselation_evaluation_shader_id != INVALID_SHADER_ID);
+        GL_CHECK(glAttachShader(program_id, tesselation_evaluation_shader_id));
+
         GL_CHECK(glLinkProgram(program_id));
+        checkProgramLinkingErrors(program_id);
         GL_CHECK(glValidateProgram(program_id));
 
         GL_CHECK(glDetachShader(program_id, vertex_shader_id));
@@ -54,12 +62,18 @@ namespace chs
         GL_CHECK(glDetachShader(program_id, fragment_shader_id));
         GL_CHECK(glDeleteShader(fragment_shader_id));
 
+        GL_CHECK(glDetachShader(program_id, tesselation_control_shader_id));
+        GL_CHECK(glDeleteShader(tesselation_control_shader_id));
+
+        GL_CHECK(glDetachShader(program_id, tesselation_evaluation_shader_id));
+        GL_CHECK(glDeleteShader(tesselation_evaluation_shader_id));
+
         return program_id;
     }
     
     int Shader::createShader(const ShaderCode& shader_code, GLenum shader_type) const
     {
-        unsigned int shader_id = glCreateShader(shader_type);
+        int shader_id = glCreateShader(shader_type);
         
         const char* shader_source = shader_code.getShaderCode();
         GL_CHECK(glShaderSource(shader_id, 1, &shader_source, nullptr));
@@ -78,6 +92,18 @@ namespace chs
         }
 
         return shader_id;
+    }
+
+    void Shader::checkProgramLinkingErrors(int shader_program_id) const
+    {
+        int success;
+        char message_log[1024];
+        glGetProgramiv(shader_program_id, GL_LINK_STATUS, &success);
+        if(!success)
+        {
+            glGetProgramInfoLog(shader_program_id, 1024, nullptr, message_log);
+            fprintf(stderr, "[OpenGL] Shader program linking returned error: %s\n", message_log);
+        }
     }
 
     std::unordered_map<const char*, int> Shader::findAllRequiredUniformLocations(const ShaderSettings& shader_settings)

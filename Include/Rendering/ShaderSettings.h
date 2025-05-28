@@ -22,7 +22,6 @@
 
 #pragma once
 
-#include <optional>
 #include <vector>
 
 #include "ShaderCode.h"
@@ -32,6 +31,8 @@ namespace chs
     struct ShaderSettings
     {
         ShaderCode vertex_shader_code;
+        ShaderCode tesselation_control_shader_code;
+        ShaderCode tesselation_evaluation_shader_code;
         ShaderCode fragment_shader_code;
         std::vector<const char*> uniform_variables;
     };

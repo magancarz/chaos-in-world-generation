@@ -32,10 +32,10 @@ namespace chs
 {
     VertexArray::VertexArray(
             const std::vector<VertexArrayEntry>& vertex_array_entries,
-            unsigned int num_of_vertices)
+            unsigned int num_of_patches)
         : vertex_array{createVertexArrayObject()},
         num_of_array_entries{static_cast<unsigned int>(vertex_array_entries.size())},
-        num_of_vertices{num_of_vertices}
+        num_of_patches{num_of_patches}
     {
         bindEachVertexArrayEntry(vertex_array_entries);
     }
@@ -82,8 +82,8 @@ namespace chs
 
     void VertexArray::draw() const
     {
-        assert(num_of_vertices > 0 && "Sanity check");
-        glDrawArrays(GL_TRIANGLES, 0, num_of_vertices);
+        assert(num_of_patches > 0 && "Sanity check");
+        glDrawArrays(GL_PATCHES, 0, static_cast<int>(num_of_patches));
     }
 
     void VertexArray::unbind() const

@@ -34,25 +34,13 @@ namespace chs
     public:
         static constexpr const char* SHADERS_DIRECTORY{"Shaders"};
 
-        static constexpr const char* VERTEX_SHADER_FILE_EXTENSION{".vert"};
-        static constexpr const char* FRAGMENT_SHADER_FILE_EXTENSION{".frag"};
-
-        inline static const std::unordered_map<const char*, ShaderType> SHADER_TYPE_MAPPINGS
-        {
-            {VERTEX_SHADER_FILE_EXTENSION, ShaderType::VERTEX},
-            {FRAGMENT_SHADER_FILE_EXTENSION, ShaderType::FRAGMENT}
-        };
-
         explicit ShaderCode(const char* shader_file_name);
 
-        const char* getShaderCode() const { return shader_code.c_str(); }
-        ShaderType getShaderType() const { return shader_type; }
+        [[nodiscard]] const char* getShaderCode() const { return shader_code.c_str(); }
 
     private:
-        std::string loadShaderCodeFromFile(const char* shader_file_name) const;
-        ShaderType detectShaderTypeFromFileName(const char* shader_file_name) const;
+        static std::string loadShaderCodeFromFile(const char* shader_file_name) ;
 
         std::string shader_code;
-        ShaderType shader_type;
     };
 }

@@ -68,7 +68,7 @@ namespace chs
         glm::vec3 front{CAMERA_FRONT};
         glm::vec3 right{CAMERA_FRONT};
 
-        float move_speed{1.0f};
+        float move_speed{3.0f};
         float look_speed{50.0f};
     };
 }

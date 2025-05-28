@@ -30,7 +30,7 @@ namespace chs
     ShaderCode::ShaderCode(const char* shader_file_name)
         : shader_code{loadShaderCodeFromFile(shader_file_name)} {}
 
-    std::string ShaderCode::loadShaderCodeFromFile(const char* shader_file_name) const
+    std::string ShaderCode::loadShaderCodeFromFile(const char* shader_file_name)
     {
         std::string shader_file_path = std::filesystem::path{SHADERS_DIRECTORY} / std::filesystem::path{shader_file_name};
         std::ifstream stream{shader_file_path.c_str()};
@@ -42,11 +42,5 @@ namespace chs
             ss << line << '\n';
         }
         return ss.str();
-    }
-
-    ShaderType ShaderCode::detectShaderTypeFromFileName(const char* shader_file_name) const
-    {
-        std::filesystem::path file_name{shader_file_name};
-        return SHADER_TYPE_MAPPINGS.at(file_name.extension().c_str());
     }
 }
