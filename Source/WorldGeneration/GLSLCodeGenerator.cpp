@@ -39,10 +39,10 @@ namespace chs
         generateFunctionOpening();
         for (unsigned int index = noise_mapping_function.mapping_intervals.size() - 1; index > 0; --index)
         {
-            const MappingInterval& mapping_interval = noise_mapping_function.mapping_intervals[index];
-            generateCodeForMappingInterval(mapping_interval);
+            const MappingInterval& left_mapping_interval = noise_mapping_function.mapping_intervals[index - 1];
+            const MappingInterval& right_mapping_interval = noise_mapping_function.mapping_intervals[index];
+            generateCodeForMappingInterval(left_mapping_interval, right_mapping_interval);
         }
-        generateCodeForLastMappingInterval(noise_mapping_function.mapping_intervals[0]);
         generateFunctionClosure();
 
         std::string result = code_builder.generate();
@@ -61,29 +61,19 @@ namespace chs
         code_builder.incrementIndentation();
     }
 
-    void GLSLCodeGenerator::generateCodeForMappingInterval(const MappingInterval& mapping_interval)
+    void GLSLCodeGenerator::generateCodeForMappingInterval(
+        const MappingInterval& left_mapping_interval,
+        const MappingInterval& right_mapping_interval)
     {
         code_builder.indentation();
 
         std::string mapping = std::format(
-            "if (x >= {:8f}f) return {:8f}f * x + ({:8f}f);",
-            mapping_interval.starting_x,
-            mapping_interval.coefficients.a,
-            mapping_interval.coefficients.b);
-        code_builder.append(mapping.c_str());
-
-        code_builder.newline();
-    }
-
-    void GLSLCodeGenerator::generateCodeForLastMappingInterval(const MappingInterval& mapping_interval)
-    {
-        code_builder.indentation();
-
-        std::string mapping = std::format(
-            "return {:8f}f * x + ({:8f}f);",
-            mapping_interval.starting_x,
-            mapping_interval.coefficients.a,
-            mapping_interval.coefficients.b);
+            "if (x >= {:8f}f) return mix({:8f}f, {:8f}f, smoothstep({:8f}f, {:8f}f, x));",
+            left_mapping_interval.starting_x,
+            left_mapping_interval.starting_y,
+            right_mapping_interval.starting_y,
+            left_mapping_interval.starting_x,
+            right_mapping_interval.starting_x);
         code_builder.append(mapping.c_str());
 
         code_builder.newline();

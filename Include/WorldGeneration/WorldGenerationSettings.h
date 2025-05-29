@@ -24,7 +24,7 @@
 
 #include <vector>
 
-#include "Spline.h"
+#include "MappingInterval.h"
 
 namespace chs
 {
@@ -33,6 +33,6 @@ namespace chs
         bool settings_updated{false};
         float x_coordinate_offset{0};
         float y_coordinate_offset{0};
-        std::vector<Spline> splines;
+        std::vector<MappingInterval> mapping_intervals;
     };
 }

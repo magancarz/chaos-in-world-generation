@@ -24,7 +24,9 @@
 
 #include <string>
 
+#define IMGUI_DEFINE_MATH_OPERATORS
 #include "imgui/imgui_impl_glfw.h"
+#include "imgui/bezie.h"
 #include "imgui/imgui_impl_opengl3.h"
 
 namespace chs
@@ -76,6 +78,13 @@ namespace chs
         }
 
         if (ImGui::SliderFloat("Y Offset", &world_generation_settings.y_coordinate_offset, -100.0f, 100.0f))
+        {
+            world_generation_settings.settings_updated = true;
+        }
+
+        if (ImGui::Table("Mapping values",
+            reinterpret_cast<glm::vec2*>(world_generation_settings.mapping_intervals.data()),
+            world_generation_settings.mapping_intervals.size()))
         {
             world_generation_settings.settings_updated = true;
         }

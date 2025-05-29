@@ -22,13 +22,11 @@
 
 #pragma once
 
-#include "Coefficients.h"
-
 namespace chs
 {
     struct MappingInterval
     {
         float starting_x{0};
-        Coefficients coefficients;
+        float starting_y{0};
     };
 }

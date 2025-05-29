@@ -53,7 +53,7 @@ int main()
     chs::Camera camera{input_manager};
     camera.setPerspectiveProjection(chs::Camera::CAMERA_FOV, window.getAspect());
 
-    static constexpr int MAP_SIZE = 128;
+    static constexpr int MAP_SIZE = 512;
 
     chs::WorldGeneration world_generation{};
     world_generation.setWidth(MAP_SIZE);
@@ -69,12 +69,12 @@ int main()
 
     std::vector<float> terrain_vertices;
 
-    const int MAP_SCALE = 16;
-    unsigned resolution = 20;
+    unsigned resolution = 16;
     for(unsigned z = 0; z <= resolution - 1; ++z)
     {
         for(unsigned x = 0; x <= resolution - 1; ++x)
         {
+            constexpr int MAP_SCALE = 16;
             terrain_vertices.emplace_back(-MAP_SCALE / 2.0f + static_cast<float>(MAP_SCALE * z) / static_cast<float>(resolution));
             terrain_vertices.emplace_back(0.0f);
             terrain_vertices.emplace_back(-MAP_SCALE / 2.0f + static_cast<float>(MAP_SCALE * x) / static_cast<float>(resolution));
@@ -133,6 +133,30 @@ int main()
     texture_coords_description.source_buffer = &vertices;
 
     chs::VertexArray vertex_array{{vertices_description, texture_coords_description}, 4 * resolution * resolution};
+
+    static constexpr unsigned int NUM_OF_MAPPING_INTERVALS = 7;
+    world_generation_settings.mapping_intervals.resize(NUM_OF_MAPPING_INTERVALS);
+
+    world_generation_settings.mapping_intervals[0].starting_x = 0.0f;
+    world_generation_settings.mapping_intervals[0].starting_y = 0.0f;
+
+    world_generation_settings.mapping_intervals[1].starting_x = 0.1f;
+    world_generation_settings.mapping_intervals[1].starting_y = 0.365f;
+
+    world_generation_settings.mapping_intervals[2].starting_x = 0.495f;
+    world_generation_settings.mapping_intervals[2].starting_y = 0.063f;
+
+    world_generation_settings.mapping_intervals[3].starting_x = 0.51f;
+    world_generation_settings.mapping_intervals[3].starting_y = 0.028f;
+
+    world_generation_settings.mapping_intervals[4].starting_x = 0.525f;
+    world_generation_settings.mapping_intervals[4].starting_y = 0.051f;
+
+    world_generation_settings.mapping_intervals[5].starting_x = 0.8f;
+    world_generation_settings.mapping_intervals[5].starting_y = 0.227f;
+
+    world_generation_settings.mapping_intervals[6].starting_x = 1.0f;
+    world_generation_settings.mapping_intervals[6].starting_y = 1.0f;
 
     auto last_time = std::chrono::high_resolution_clock::now();
     while (!window.closeRequested())

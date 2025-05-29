@@ -25,9 +25,7 @@
 #include <cassert>
 #include <iostream>
 
-#include "WorldGeneration/CoefficientsCalculator.h"
 #include "WorldGeneration/GLSLCodeGenerator.h"
-#include "WorldGeneration/MappingInterval.h"
 #include "WorldGeneration/NoiseMappingFunction.h"
 
 namespace chs
@@ -43,6 +41,8 @@ namespace chs
     {
         assert(width > 0 && width <= MAX_WIDTH_VALUE && height > 0 && height <= MAX_HEIGHT_VALUE);
 
+        NoiseMappingFunction noise_mapping_function{world_generation_settings.mapping_intervals};
+
         unsigned int index = 0;
         std::vector<glm::vec4> values(width * height);
         for (unsigned int y = 0; y < height; ++y)
@@ -53,10 +53,15 @@ namespace chs
                     world_generation_settings.x_coordinate_offset + static_cast<float>(x),
                     world_generation_settings.y_coordinate_offset + static_cast<float>(y));
                 noise_value = (noise_value * 0.5f) + 0.5f;
+                noise_value = noise_mapping_function.map(noise_value);
+                assert(0 <= noise_value && noise_value <= 1.0f);
                 values.at(index) = glm::vec4{noise_value, noise_value, noise_value, 255.0f};
                 index += 1;
             }
         }
+
+        GLSLCodeGenerator code_generator{noise_mapping_function};
+        std::cout << code_generator.generate();
 
         return values;
     }

@@ -22,9 +22,10 @@
 
 #include "WorldGeneration/NoiseMappingFunction.h"
 
-#include <cstdio>
-
 #include "glm/common.hpp"
+
+#define GLM_ENABLE_EXPERIMENTAL
+#include "glm/gtx/compatibility.hpp"
 
 namespace chs
 {
@@ -53,7 +54,15 @@ namespace chs
             return noise_value;
         }
 
-        MappingInterval& mapping_interval = mapping_intervals[valid_mapping_interval_index];
-        return mapping_interval.coefficients.a * noise_value + mapping_interval.coefficients.b;
+        MappingInterval& left_mapping_interval = mapping_intervals[valid_mapping_interval_index];
+        MappingInterval& right_mapping_interval = mapping_intervals[valid_mapping_interval_index + 1];
+
+        return glm::mix(
+                left_mapping_interval.starting_y,
+                right_mapping_interval.starting_y,
+                glm::smoothstep(
+                    left_mapping_interval.starting_x,
+                    right_mapping_interval.starting_x,
+                    noise_value));
     }
 }

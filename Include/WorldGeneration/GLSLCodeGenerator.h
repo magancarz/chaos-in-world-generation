@@ -43,8 +43,12 @@ namespace chs
         std::string function_name{"noiseMapping"};
 
         void generateFunctionOpening();
-        void generateCodeForMappingInterval(const MappingInterval& mapping_interval);
-        void generateCodeForLastMappingInterval(const MappingInterval& mapping_interval);
+        void generateCodeForMappingInterval(
+            const MappingInterval& left_mapping_interval,
+            const MappingInterval& right_mapping_interval);
+        void generateCodeForLastMappingInterval(
+            const MappingInterval& left_mapping_interval,
+            const MappingInterval& right_mapping_interval);
         void generateFunctionClosure();
     };
 }
