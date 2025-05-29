@@ -6,3 +6,5 @@ target_sources(chaos-in-world-generation-lib PRIVATE
         imgui_stdlib.cpp
         imgui_tables.cpp
         imgui_widgets.cpp)
+
+target_include_directories(chaos-in-world-generation-lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
