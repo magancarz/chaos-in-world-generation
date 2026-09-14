@@ -29,6 +29,7 @@
 #include <chrono>
 #include <cmath>
 #include <filesystem>
+#include <cstdlib>
 
 #include <glm/glm.hpp>
 #include <glm/common.hpp>
@@ -103,6 +104,12 @@ namespace
 
 int main()
 {
+    // Keep relative shader and export paths rooted in the checkout under bazel run.
+    if (const char* workspace = std::getenv("BUILD_WORKSPACE_DIRECTORY"))
+    {
+        std::filesystem::current_path(workspace);
+    }
+
     chs::Window window{};
     chs::Editor editor{window};
     chs::InputManager input_manager{window};

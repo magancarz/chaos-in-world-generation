@@ -1,0 +1,102 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+package(default_visibility = ["//visibility:public"])
+
+cc_library(
+    name = "glm",
+    hdrs = glob([
+        "GLM/glm/**/*.h",
+        "GLM/glm/**/*.hpp",
+        "GLM/glm/**/*.inl",
+    ]),
+    includes = ["GLM"],
+)
+
+cc_library(
+    name = "fast_noise_lite",
+    hdrs = ["FastNoiseLite/Cpp/FastNoiseLite.h"],
+    includes = ["."],
+)
+
+cc_library(
+    name = "stb",
+    hdrs = [
+        "stb_image.h",
+        "stb_image_write.h",
+    ],
+    includes = ["."],
+)
+
+# GLEW and OpenGL are supplied by the host development packages.
+cc_library(
+    name = "opengl",
+    linkopts = [
+        "-lGLEW",
+        "-lGL",
+    ],
+)
+
+# Build the pinned GLFW submodule with its Linux/X11 backend (also works
+# through XWayland). No CMake or generated Wayland protocol files are needed.
+cc_library(
+    name = "glfw",
+    srcs = ["GLFW/src/" + source for source in [
+        "context.c",
+        "init.c",
+        "input.c",
+        "monitor.c",
+        "platform.c",
+        "vulkan.c",
+        "window.c",
+        "egl_context.c",
+        "osmesa_context.c",
+        "null_init.c",
+        "null_monitor.c",
+        "null_window.c",
+        "null_joystick.c",
+        "posix_time.c",
+        "posix_thread.c",
+        "posix_module.c",
+        "posix_poll.c",
+        "linux_joystick.c",
+        "x11_init.c",
+        "x11_monitor.c",
+        "x11_window.c",
+        "xkb_unicode.c",
+        "glx_context.c",
+    ]] + glob(["GLFW/src/*.h"]),
+    hdrs = glob(["GLFW/include/GLFW/*.h"]),
+    includes = ["GLFW/include"],
+    linkopts = [
+        "-ldl",
+        "-lm",
+        "-pthread",
+    ],
+    local_defines = [
+        "_GLFW_X11",
+        "_DEFAULT_SOURCE",
+    ],
+    target_compatible_with = ["@platforms//os:linux"],
+)
+
+cc_library(
+    name = "imgui",
+    srcs = [
+        "imgui/imgui.cpp",
+        "imgui/imgui_draw.cpp",
+        "imgui/imgui_impl_glfw.cpp",
+        "imgui/imgui_impl_opengl3.cpp",
+        "imgui/imgui_stdlib.cpp",
+        "imgui/imgui_tables.cpp",
+        "imgui/imgui_widgets.cpp",
+    ],
+    hdrs = glob(["imgui/*.h"]),
+    includes = [
+        ".",
+        "imgui",
+    ],
+    deps = [
+        ":glfw",
+        ":opengl",
+    ],
+)

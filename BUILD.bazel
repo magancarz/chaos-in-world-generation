@@ -1,0 +1,66 @@
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_test")
+
+cc_library(
+    name = "terrain-core",
+    srcs = [
+        "Source/WorldGeneration.cpp",
+        "Source/WorldGeneration/NoiseMappingFunction.cpp",
+    ],
+    hdrs = [
+        "Include/WorldGeneration.h",
+        "Include/WorldGeneration/MappingInterval.h",
+        "Include/WorldGeneration/NoiseMappingFunction.h",
+    ],
+    includes = ["Include"],
+    deps = ["//ThirdParty:glm"],
+)
+
+cc_library(
+    name = "chaos-in-world-generation-lib",
+    srcs = glob(
+        ["Source/**/*.cpp"],
+        exclude = [
+            "Source/WorldGeneration.cpp",
+            "Source/WorldGeneration/NoiseMappingFunction.cpp",
+        ],
+    ),
+    hdrs = glob(
+        ["Include/**/*.h"],
+        exclude = [
+            "Include/WorldGeneration.h",
+            "Include/WorldGeneration/MappingInterval.h",
+            "Include/WorldGeneration/NoiseMappingFunction.h",
+        ],
+    ),
+    includes = ["Include"],
+    deps = [
+        ":terrain-core",
+        "//ThirdParty:glfw",
+        "//ThirdParty:glm",
+        "//ThirdParty:imgui",
+        "//ThirdParty:opengl",
+        "//ThirdParty:stb",
+    ],
+)
+
+cc_binary(
+    name = "chaos-in-world-generation",
+    srcs = ["Application/main.cpp"],
+    data = glob(["Shaders/*"]),
+    deps = [
+        ":chaos-in-world-generation-lib",
+        "//ThirdParty:fast_noise_lite",
+    ],
+)
+
+cc_test(
+    name = "terrain-core-tests",
+    size = "small",
+    srcs = ["Tests/WorldGenerationTests.cpp"],
+    # These tests use assert(), including in optimized builds.
+    copts = ["-UNDEBUG"],
+    deps = [
+        ":terrain-core",
+        "//ThirdParty:fast_noise_lite",
+    ],
+)

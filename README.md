@@ -30,19 +30,39 @@ PNG export to `Exports/terrain_color.png` and `Exports/terrain_height.png`.
 
 ## Build
 
-The project requires CMake 3.26+, a C++23 compiler, OpenGL 4.6, and GLEW.
+Use Bazelisk (which selects Bazel 7.7.1 from `.bazelversion`) and a C++23
+compiler with standard-library support for `<format>` (for example GCC 13+).
+The application currently builds on Linux using GLFW's X11 backend; Wayland
+sessions need XWayland. Running it requires OpenGL 4.6.
+
+Install the graphics development dependencies on Ubuntu/Debian:
+
+```sh
+sudo apt install build-essential libglew-dev libgl1-mesa-dev libx11-dev \
+    libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libxext-dev
+```
+
+Initialize the pinned source dependencies and build/run the application:
 
 ```sh
 git submodule update --init --recursive
-cmake -S . -B build
-cmake --build build
-./build/chaos-in-world-generation
+bazel build //:chaos-in-world-generation
+bazel run //:chaos-in-world-generation
 ```
 
-Core tests do not require OpenGL or GLEW:
+GLFW, GLM, FastNoiseLite, ImGui, and stb use the sources in `ThirdParty`.
+GLEW and OpenGL use system libraries. Bazel downloads its pinned build rules
+on the first build. Shaders are included in the application's Bazel runfiles.
+PNG exports from `bazel run` are written to the checkout's `Exports/` directory.
+To launch the binary directly, run `./bazel-bin/chaos-in-world-generation`
+from the repository root so it can find `Shaders/`.
+
+Core tests require only the compiler and initialized source dependencies,
+without OpenGL, GLEW, or X11 development packages:
 
 ```sh
-cmake -S . -B build-tests -DCIWG_BUILD_APP=OFF
-cmake --build build-tests
-ctest --test-dir build-tests
+bazel test //:terrain-core-tests
 ```
+
+Build everything with `bazel build //...`. Add `-c opt` for an optimized build
+or `-c dbg` for debug symbols; test assertions remain enabled in either mode.

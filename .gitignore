@@ -2,3 +2,10 @@
 Release/
 Debug/
 .idea/
+
+# Build outputs
+/bazel-*
+/build/
+/build-*/
+/Exports/
+/imgui.ini
