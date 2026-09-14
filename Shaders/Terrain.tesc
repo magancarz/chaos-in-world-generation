@@ -3,6 +3,8 @@
 layout (vertices = 4) out;
 
 uniform mat4 view;
+uniform float minimum_tessellation_level;
+uniform float maximum_tessellation_level;
 
 layout (location = 0) in vec2 pass_texture_coords[];
 
@@ -15,8 +17,6 @@ void main(void)
 
 	if (gl_InvocationID == 0)
 	{
-		const int MIN_TESS_LEVEL = 4;
-		const int MAX_TESS_LEVEL = 64;
 		const float MIN_DISTANCE = 20;
 		const float MAX_DISTANCE = 800;
 
@@ -30,10 +30,10 @@ void main(void)
 		float distance10 = clamp((abs(eye_space_pos10.z) - MIN_DISTANCE) / (MAX_DISTANCE - MIN_DISTANCE), 0.0, 1.0);
 		float distance11 = clamp((abs(eye_space_pos11.z) - MIN_DISTANCE) / (MAX_DISTANCE - MIN_DISTANCE), 0.0, 1.0);
 
-		float tess_level0 = mix(MAX_TESS_LEVEL, MIN_TESS_LEVEL, min(distance10, distance00));
-		float tess_level1 = mix(MAX_TESS_LEVEL, MIN_TESS_LEVEL, min(distance00, distance01));
-		float tess_level2 = mix(MAX_TESS_LEVEL, MIN_TESS_LEVEL, min(distance01, distance11));
-		float tess_level3 = mix(MAX_TESS_LEVEL, MIN_TESS_LEVEL, min(distance11, distance10));
+		float tess_level0 = mix(maximum_tessellation_level, minimum_tessellation_level, min(distance10, distance00));
+		float tess_level1 = mix(maximum_tessellation_level, minimum_tessellation_level, min(distance00, distance01));
+		float tess_level2 = mix(maximum_tessellation_level, minimum_tessellation_level, min(distance01, distance11));
+		float tess_level3 = mix(maximum_tessellation_level, minimum_tessellation_level, min(distance11, distance10));
 
 		gl_TessLevelOuter[0] = tess_level0;
 		gl_TessLevelOuter[1] = tess_level1;

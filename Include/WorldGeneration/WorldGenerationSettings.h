@@ -22,17 +22,44 @@
 
 #pragma once
 
+#include <cstdint>
 #include <vector>
 
 #include "MappingInterval.h"
 
 namespace chs
 {
+    enum class TerrainVisualizationMode
+    {
+        Solid,
+        Wireframe,
+        HeightOnly,
+        ColorOnly
+    };
+
     struct WorldGenerationSettings
     {
-        bool settings_updated{false};
         float x_coordinate_offset{0};
         float y_coordinate_offset{0};
+        int seed{2025};
+        int octaves{8};
+        int map_resolution{512};
         std::vector<MappingInterval> mapping_intervals;
+
+        float height_scale{8.0f};
+        float minimum_tessellation_level{4.0f};
+        float maximum_tessellation_level{64.0f};
+        TerrainVisualizationMode visualization_mode{TerrainVisualizationMode::Solid};
+
+        bool automatic_regeneration{true};
+        int regeneration_debounce_ms{250};
+    };
+
+    struct TerrainStatistics
+    {
+        double generation_time_ms{0.0};
+        std::uint64_t sample_count{0};
+        std::uint64_t triangle_count{0};
+        const char* export_status{"Not exported"};
     };
 }

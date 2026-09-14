@@ -27,19 +27,30 @@
 
 namespace chs
 {
+    struct EditorActions
+    {
+        bool terrain_settings_changed{false};
+        bool regenerate_requested{false};
+        bool export_requested{false};
+    };
+
     class Editor
     {
     public:
         explicit Editor(Window& window);
         ~Editor();
 
-        void updateGUI(WorldGenerationSettings& world_generation_settings);
+        [[nodiscard]] EditorActions updateGUI(
+            WorldGenerationSettings& world_generation_settings,
+            const TerrainStatistics& terrain_statistics);
         void drawGUI() const;
 
     private:
         void initializeGraphicalInterface(Window& window);
     
         void beginNewFrame() const;
-        void updateGUIElements(WorldGenerationSettings& world_generation_settings) const;
+        [[nodiscard]] EditorActions updateGUIElements(
+            WorldGenerationSettings& world_generation_settings,
+            const TerrainStatistics& terrain_statistics) const;
     };
 }

@@ -23,6 +23,7 @@
 #include "Rendering/Shader.h"
 
 #include <cassert>
+#include <iostream>
 
 #include "Rendering/DebugUtils.h"
 
@@ -87,6 +88,7 @@ namespace chs
             GL_CHECK(glGetShaderiv(shader_id, GL_INFO_LOG_LENGTH, &length));
             auto message = static_cast<char*>(alloca(length * sizeof(char)));
             GL_CHECK(glGetShaderInfoLog(shader_id, length, &length, message));
+            std::cerr << "[OpenGL] Shader compilation failed:\n" << message << '\n';
             GL_CHECK(glDeleteShader(shader_id));
             return INVALID_SHADER_ID;
         }
@@ -106,9 +108,9 @@ namespace chs
         }
     }
 
-    std::unordered_map<const char*, int> Shader::findAllRequiredUniformLocations(const ShaderSettings& shader_settings)
+    std::unordered_map<std::string, int> Shader::findAllRequiredUniformLocations(const ShaderSettings& shader_settings)
     {
-        std::unordered_map<const char*, int> uniform_locations{};
+        std::unordered_map<std::string, int> uniform_locations{};
         for (const auto& uniform_variable_name : shader_settings.uniform_variables)
         {
             assert(!uniform_locations.contains(uniform_variable_name));
@@ -118,9 +120,9 @@ namespace chs
         return uniform_locations;
     }
 
-    int Shader::findUniformLocation(const char* uniform_variable_name)
+    int Shader::findUniformLocation(const std::string& uniform_variable_name)
     {
-        int uniform_location = glGetUniformLocation(shader_program_id, uniform_variable_name);
+        int uniform_location = glGetUniformLocation(shader_program_id, uniform_variable_name.c_str());
         assert(uniform_location != INVALID_UNIFORM_LOCATION && "Unable to get uniform location");
 
         return uniform_location;
@@ -153,5 +155,17 @@ namespace chs
         int uniform_location = uniform_locations.at(uniform_name);
         static constexpr GLenum DONT_TRANSPOSE{GL_FALSE};
         GL_CHECK(glUniformMatrix4fv(uniform_location, 1, DONT_TRANSPOSE, &matrix[0][0]));
+    }
+
+    void Shader::loadFloat(const char* uniform_name, float value)
+    {
+        assert(uniform_locations.contains(uniform_name) && "Uniform variable must be present in shader");
+        GL_CHECK(glUniform1f(uniform_locations.at(uniform_name), value));
+    }
+
+    void Shader::loadInt(const char* uniform_name, int value)
+    {
+        assert(uniform_locations.contains(uniform_name) && "Uniform variable must be present in shader");
+        GL_CHECK(glUniform1i(uniform_locations.at(uniform_name), value));
     }
 }

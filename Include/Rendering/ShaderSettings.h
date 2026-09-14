@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <string>
 #include <vector>
 
 #include "ShaderCode.h"
@@ -34,6 +35,6 @@ namespace chs
         ShaderCode tesselation_control_shader_code;
         ShaderCode tesselation_evaluation_shader_code;
         ShaderCode fragment_shader_code;
-        std::vector<const char*> uniform_variables;
+        std::vector<std::string> uniform_variables;
     };
 }

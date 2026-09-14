@@ -24,6 +24,8 @@
 
 #include <fstream>
 #include <filesystem>
+#include <sstream>
+#include <stdexcept>
 
 namespace chs
 {
@@ -34,6 +36,10 @@ namespace chs
     {
         std::string shader_file_path = std::filesystem::path{SHADERS_DIRECTORY} / std::filesystem::path{shader_file_name};
         std::ifstream stream{shader_file_path.c_str()};
+        if (!stream)
+        {
+            throw std::runtime_error{"Unable to open shader file: " + shader_file_path};
+        }
         std::string line;
         std::stringstream ss;
 

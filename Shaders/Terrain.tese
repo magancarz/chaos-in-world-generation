@@ -4,10 +4,12 @@ layout (quads, fractional_odd_spacing, ccw) in;
 
 uniform sampler2D height_map;
 uniform mat4 projection_view;
+uniform float height_scale;
 
 layout (location = 0) in vec2 texture_coords[];
 
-layout (location = 0) out float height;
+layout (location = 0) out vec3 terrain_color;
+layout (location = 1) out float normalized_height;
 
 void main(void)
 {
@@ -23,7 +25,10 @@ void main(void)
 	vec2 t1 = (t11 - t10) * u + t10;
 	vec2 tex_coord = (t1 - t0) * v + t0;
 
-	height = texture(height_map, tex_coord).x * 8.0f;
+	vec4 terrain_sample = texture(height_map, tex_coord);
+	float height = terrain_sample.a * height_scale;
+	terrain_color = terrain_sample.rgb;
+	normalized_height = terrain_sample.a;
 
 	vec4 p00 = gl_in[0].gl_Position;
 	vec4 p01 = gl_in[1].gl_Position;

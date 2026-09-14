@@ -23,6 +23,8 @@
 #pragma once
 
 #include <limits>
+#include <string>
+#include <unordered_map>
 
 #include <GL/glew.h>
 #include <glm/glm.hpp>
@@ -45,6 +47,8 @@ namespace chs
         void bindTexture(unsigned int slot, const Texture& texture) const;
 
         void loadMatrix(const char* uniform_name, const glm::mat4& matrix);
+        void loadFloat(const char* uniform_name, float value);
+        void loadInt(const char* uniform_name, int value);
 
     private:
         int createShaderProgram(const ShaderSettings& shader_settings) const;
@@ -55,11 +59,11 @@ namespace chs
 
         int shader_program_id{INVALID_SHADER_ID};
 
-        std::unordered_map<const char*, int> findAllRequiredUniformLocations(const ShaderSettings& shader_settings);
-        int findUniformLocation(const char* uniform_variable_name);
+        std::unordered_map<std::string, int> findAllRequiredUniformLocations(const ShaderSettings& shader_settings);
+        int findUniformLocation(const std::string& uniform_variable_name);
 
         static constexpr int INVALID_UNIFORM_LOCATION{-1};
 
-        std::unordered_map<const char*, int> uniform_locations;
+        std::unordered_map<std::string, int> uniform_locations;
     };
 }

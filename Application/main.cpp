@@ -27,8 +27,13 @@
 #include <cstdint>
 #include <iostream>
 #include <chrono>
+#include <cmath>
+#include <filesystem>
 
 #include <glm/glm.hpp>
+#include <glm/common.hpp>
+
+#include "FastNoiseLite/Cpp/FastNoiseLite.h"
 
 #include "Images/Image.h"
 #include "Window/Window.h"
@@ -41,8 +46,60 @@
 #include "Input/InputManager.h"
 #include "Rendering/Camera.h"
 #include "WorldGeneration/WorldGenerationSettings.h"
+#include "WorldGeneration/NoiseMappingFunction.h"
 
 #include <glm/ext/matrix_transform.hpp>
+
+namespace
+{
+    glm::vec3 terrainColor(float height)
+    {
+        if (height < 0.30f) return {0.04f, 0.20f, 0.38f};
+        if (height < 0.38f) return {0.08f, 0.38f, 0.58f};
+        if (height < 0.43f) return {0.76f, 0.68f, 0.45f};
+        if (height < 0.68f) return {0.16f, 0.42f, 0.18f};
+        if (height < 0.82f) return {0.32f, 0.29f, 0.25f};
+        return {0.88f, 0.91f, 0.92f};
+    }
+
+    bool exportTerrainMaps(
+        const std::vector<glm::vec4>& terrain_data,
+        int width,
+        int height)
+    {
+        std::vector<std::uint8_t> color_data(terrain_data.size() * 3);
+        std::vector<std::uint8_t> height_data(terrain_data.size());
+
+        for (int y = 0; y < height; ++y)
+        {
+            for (int x = 0; x < width; ++x)
+            {
+                const std::size_t source_index = static_cast<std::size_t>(y * width + x);
+                const std::size_t output_index = static_cast<std::size_t>((height - y - 1) * width + x);
+                const glm::vec4& sample = terrain_data[source_index];
+                color_data[output_index * 3] = static_cast<std::uint8_t>(std::lround(glm::clamp(sample.r, 0.0f, 1.0f) * 255.0f));
+                color_data[output_index * 3 + 1] = static_cast<std::uint8_t>(std::lround(glm::clamp(sample.g, 0.0f, 1.0f) * 255.0f));
+                color_data[output_index * 3 + 2] = static_cast<std::uint8_t>(std::lround(glm::clamp(sample.b, 0.0f, 1.0f) * 255.0f));
+                height_data[output_index] = static_cast<std::uint8_t>(std::lround(glm::clamp(sample.a, 0.0f, 1.0f) * 255.0f));
+            }
+        }
+
+        const std::filesystem::path export_directory{"Exports"};
+        std::error_code directory_error;
+        std::filesystem::create_directories(export_directory, directory_error);
+        if (directory_error)
+        {
+            return false;
+        }
+        const bool color_saved = chs::Image::saveToFile(
+            (export_directory / "terrain_color.png").c_str(),
+            color_data.data(), width, height, 3, width * 3);
+        const bool height_saved = chs::Image::saveToFile(
+            (export_directory / "terrain_height.png").c_str(),
+            height_data.data(), width, height, 1, width);
+        return color_saved && height_saved;
+    }
+}
 
 int main()
 {
@@ -53,17 +110,16 @@ int main()
     chs::Camera camera{input_manager};
     camera.setPerspectiveProjection(chs::Camera::CAMERA_FOV, window.getAspect());
 
-    static constexpr int MAP_SIZE = 512;
-
     chs::WorldGeneration world_generation{};
-    world_generation.setWidth(MAP_SIZE);
-    world_generation.setHeight(MAP_SIZE);
 
     chs::WorldGenerationSettings world_generation_settings{};
-    auto height_map_data = world_generation.generate(world_generation_settings);
+
+    FastNoiseLite noise{2025};
+    noise.SetNoiseType(FastNoiseLite::NoiseType_Perlin);
+    noise.SetFractalType(FastNoiseLite::FractalType_FBm);
+    noise.SetFractalOctaves(8);
 
     chs::Texture texture{};
-    texture.bindData(MAP_SIZE, MAP_SIZE, height_map_data.data());
 
     glPatchParameteri(GL_PATCH_VERTICES, 4);
 
@@ -112,7 +168,13 @@ int main()
         .tesselation_control_shader_code = std::move(tesselation_control_shader_code),
         .tesselation_evaluation_shader_code = std::move(tesselation_evaluation_shader_code),
         .fragment_shader_code = std::move(fragment_shader_code),
-        .uniform_variables = {"view", "projection_view"}
+        .uniform_variables = {
+            "view",
+            "projection_view",
+            "height_scale",
+            "minimum_tessellation_level",
+            "maximum_tessellation_level",
+            "visualization_mode"}
     };
 
     chs::Shader shader{shader_settings};
@@ -158,6 +220,51 @@ int main()
     world_generation_settings.mapping_intervals[6].starting_x = 1.0f;
     world_generation_settings.mapping_intervals[6].starting_y = 1.0f;
 
+    // This is the extension point for terrain experiments. Any callable with
+    // this signature can provide height and color for a sampled grid position.
+    const auto generate_terrain = [&]()
+    {
+        world_generation.setWidth(static_cast<unsigned int>(world_generation_settings.map_resolution));
+        world_generation.setHeight(static_cast<unsigned int>(world_generation_settings.map_resolution));
+        noise.SetSeed(world_generation_settings.seed);
+        noise.SetFractalOctaves(world_generation_settings.octaves);
+        const chs::NoiseMappingFunction height_curve{world_generation_settings.mapping_intervals};
+        return world_generation.generate([&](glm::vec2 point)
+        {
+            const float raw_noise = noise.GetNoise(
+                world_generation_settings.x_coordinate_offset + point.x,
+                world_generation_settings.y_coordinate_offset + point.y);
+            const float normalized_noise = raw_noise * 0.5f + 0.5f;
+            const float height = glm::clamp(height_curve.map(normalized_noise), 0.0f, 1.0f);
+            return chs::TerrainSample{height, terrainColor(height)};
+        });
+    };
+
+    std::vector<glm::vec4> terrain_data;
+    chs::TerrainStatistics terrain_statistics{};
+    int generated_resolution{world_generation_settings.map_resolution};
+    const auto regenerate_terrain = [&]()
+    {
+        const auto generation_started = std::chrono::steady_clock::now();
+        terrain_data = generate_terrain();
+        const auto generation_finished = std::chrono::steady_clock::now();
+        terrain_statistics.generation_time_ms =
+            std::chrono::duration<double, std::milli>(generation_finished - generation_started).count();
+        terrain_statistics.sample_count = terrain_data.size();
+        generated_resolution = world_generation_settings.map_resolution;
+        texture.bindData(
+            static_cast<unsigned int>(generated_resolution),
+            static_cast<unsigned int>(generated_resolution),
+            terrain_data.data());
+    };
+    regenerate_terrain();
+
+    unsigned int primitive_query{0};
+    glGenQueries(1, &primitive_query);
+    bool primitive_query_in_flight{false};
+    bool regeneration_pending{false};
+    auto last_terrain_change = std::chrono::steady_clock::now();
+
     auto last_time = std::chrono::high_resolution_clock::now();
     while (!window.closeRequested())
     {
@@ -167,13 +274,46 @@ int main()
         float frame_delta_time = static_cast<float>(std::chrono::duration_cast<std::chrono::milliseconds>(now - last_time).count()) / 1000.0f;
         last_time = now;
 
-        editor.updateGUI(world_generation_settings);
-
-        if (world_generation_settings.settings_updated)
+        if (primitive_query_in_flight)
         {
-            auto height_map_data = world_generation.generate(world_generation_settings);
-            texture.bindData(MAP_SIZE, MAP_SIZE, height_map_data.data());
-            world_generation_settings.settings_updated = false;
+            int result_available{0};
+            glGetQueryObjectiv(primitive_query, GL_QUERY_RESULT_AVAILABLE, &result_available);
+            if (result_available != 0)
+            {
+                GLuint64 primitive_count{0};
+                glGetQueryObjectui64v(primitive_query, GL_QUERY_RESULT, &primitive_count);
+                terrain_statistics.triangle_count = primitive_count;
+                primitive_query_in_flight = false;
+            }
+        }
+
+        const chs::EditorActions editor_actions = editor.updateGUI(world_generation_settings, terrain_statistics);
+        if (editor_actions.terrain_settings_changed)
+        {
+            regeneration_pending = true;
+            last_terrain_change = std::chrono::steady_clock::now();
+        }
+
+        const auto debounce_elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
+            std::chrono::steady_clock::now() - last_terrain_change).count();
+        const bool automatic_regeneration_due =
+            regeneration_pending &&
+            world_generation_settings.automatic_regeneration &&
+            debounce_elapsed >= world_generation_settings.regeneration_debounce_ms;
+        if (editor_actions.regenerate_requested || automatic_regeneration_due)
+        {
+            regenerate_terrain();
+            regeneration_pending = false;
+        }
+
+        if (editor_actions.export_requested)
+        {
+            terrain_statistics.export_status = exportTerrainMaps(
+                terrain_data,
+                generated_resolution,
+                generated_resolution)
+                ? "Saved to Exports/terrain_color.png and terrain_height.png"
+                : "Export failed";
         }
 
         camera.update(frame_delta_time);
@@ -187,8 +327,30 @@ int main()
         shader.bindTexture(0, texture);
         shader.loadMatrix("view", view);
         shader.loadMatrix("projection_view", projection_view);
+        const bool color_only =
+            world_generation_settings.visualization_mode == chs::TerrainVisualizationMode::ColorOnly;
+        shader.loadFloat("height_scale", color_only ? 0.0f : world_generation_settings.height_scale);
+        shader.loadFloat("minimum_tessellation_level", world_generation_settings.minimum_tessellation_level);
+        shader.loadFloat("maximum_tessellation_level", world_generation_settings.maximum_tessellation_level);
+        shader.loadInt(
+            "visualization_mode",
+            world_generation_settings.visualization_mode == chs::TerrainVisualizationMode::HeightOnly ? 1 : 0);
 
+        const bool wireframe =
+            world_generation_settings.visualization_mode == chs::TerrainVisualizationMode::Wireframe;
+        glPolygonMode(GL_FRONT_AND_BACK, wireframe ? GL_LINE : GL_FILL);
+
+        if (!primitive_query_in_flight)
+        {
+            glBeginQuery(GL_PRIMITIVES_GENERATED, primitive_query);
+        }
         vertex_array.draw();
+        if (!primitive_query_in_flight)
+        {
+            glEndQuery(GL_PRIMITIVES_GENERATED);
+            primitive_query_in_flight = true;
+        }
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
         vertex_array.unbind();
         shader.unbind();
@@ -197,6 +359,8 @@ int main()
 
         window.finalizeFrame();
     }
+
+    glDeleteQueries(1, &primitive_query);
 
     return 0;
 }

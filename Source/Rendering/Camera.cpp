@@ -85,7 +85,7 @@ namespace chs
     void Camera::setPerspectiveProjection(float fov_y, float aspect)
     {
         assert(glm::abs(aspect - std::numeric_limits<float>::epsilon()) > 0.0f);
-        projection = glm::perspective(fov_y, aspect, CAMERA_NEAR, CAMERA_FAR);
+        projection = glm::perspective(glm::radians(fov_y), aspect, CAMERA_NEAR, CAMERA_FAR);
     }
 
     void Camera::updateViewMatrix()

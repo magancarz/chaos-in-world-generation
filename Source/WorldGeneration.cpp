@@ -22,26 +22,20 @@
 
 #include "WorldGeneration.h"
 
-#include <cassert>
-#include <iostream>
-
-#include "WorldGeneration/GLSLCodeGenerator.h"
-#include "WorldGeneration/NoiseMappingFunction.h"
+#include <stdexcept>
 
 namespace chs
 {
-    WorldGeneration::WorldGeneration()
+    std::vector<glm::vec4> WorldGeneration::generate(const TerrainFunction& terrain_function) const
     {
-        noise.SetNoiseType(FastNoiseLite::NoiseType_Perlin);
-        noise.SetFractalType(FastNoiseLite::FractalType_FBm);
-        noise.SetFractalOctaves(8);
-    }
-
-    std::vector<glm::vec4> WorldGeneration::generate(const WorldGenerationSettings& world_generation_settings)
-    {
-        assert(width > 0 && width <= MAX_WIDTH_VALUE && height > 0 && height <= MAX_HEIGHT_VALUE);
-
-        NoiseMappingFunction noise_mapping_function{world_generation_settings.mapping_intervals};
+        if (width == 0 || width > MAX_WIDTH_VALUE || height == 0 || height > MAX_HEIGHT_VALUE)
+        {
+            throw std::invalid_argument{"Terrain dimensions are outside the supported range"};
+        }
+        if (!terrain_function)
+        {
+            throw std::invalid_argument{"A terrain function is required"};
+        }
 
         unsigned int index = 0;
         std::vector<glm::vec4> values(width * height);
@@ -49,19 +43,11 @@ namespace chs
         {
             for (unsigned int x = 0; x < width; ++x)
             {
-                float noise_value = noise.GetNoise(
-                    world_generation_settings.x_coordinate_offset + static_cast<float>(x),
-                    world_generation_settings.y_coordinate_offset + static_cast<float>(y));
-                noise_value = (noise_value * 0.5f) + 0.5f;
-                noise_value = noise_mapping_function.map(noise_value);
-                assert(0 <= noise_value && noise_value <= 1.0f);
-                values.at(index) = glm::vec4{noise_value, noise_value, noise_value, 255.0f};
+                const TerrainSample sample = terrain_function(glm::vec2{x, y});
+                values[index] = glm::vec4{sample.color, sample.height};
                 index += 1;
             }
         }
-
-        GLSLCodeGenerator code_generator{noise_mapping_function};
-        std::cout << code_generator.generate();
 
         return values;
     }

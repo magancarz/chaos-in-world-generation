@@ -35,7 +35,7 @@ namespace chs
     public:
         explicit NoiseMappingFunction(std::vector<MappingInterval> mapping_intervals);
 
-        float map(float noise_value);
+        [[nodiscard]] float map(float noise_value) const;
 
     private:
         std::vector<MappingInterval> mapping_intervals;

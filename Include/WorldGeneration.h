@@ -22,36 +22,36 @@
 
 #pragma once
 
+#include <functional>
 #include <vector>
 
-#include "FastNoiseLite/Cpp/FastNoiseLite.h"
 #include <glm/glm.hpp>
-
-#include "WorldGeneration/WorldGenerationSettings.h"
 
 namespace chs
 {
+    struct TerrainSample
+    {
+        // The current renderer expects normalized values in [0, 1].
+        float height{0.0f};
+        glm::vec3 color{0.0f};
+    };
+
     class WorldGeneration
     {
     public:
-        WorldGeneration();
+        using TerrainFunction = std::function<TerrainSample(glm::vec2)>;
 
-        std::vector<glm::vec4> generate(const WorldGenerationSettings& world_generation_settings);
+        // Samples the function at integer grid positions and packs RGB color and
+        // height into a GPU-ready RGBA texture (height is stored in alpha).
+        [[nodiscard]] std::vector<glm::vec4> generate(const TerrainFunction& terrain_function) const;
 
         static constexpr unsigned int MAX_WIDTH_VALUE{4096};
         static constexpr unsigned int MAX_HEIGHT_VALUE{4096};
 
         void setWidth(unsigned int value) { width = value; }
         void setHeight(unsigned int value) { height = value; }
-        void setSeed(unsigned int value) { seed = value; }
-
-        void setOctaves(unsigned int value) { noise.SetFractalOctaves(value); }
-
     private:
-        FastNoiseLite noise;
-
         unsigned int width{64};
         unsigned int height{64};
-        unsigned int seed{2025};
     };
 }

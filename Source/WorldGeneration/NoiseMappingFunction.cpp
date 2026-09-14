@@ -22,6 +22,10 @@
 
 #include "WorldGeneration/NoiseMappingFunction.h"
 
+#include <algorithm>
+#include <iterator>
+#include <utility>
+
 #include "glm/common.hpp"
 
 #define GLM_ENABLE_EXPERIMENTAL
@@ -30,32 +34,36 @@
 namespace chs
 {
     NoiseMappingFunction::NoiseMappingFunction(std::vector<MappingInterval> mapping_intervals)
-        : mapping_intervals{std::move(mapping_intervals)} {}
-
-    float NoiseMappingFunction::map(float noise_value)
+        : mapping_intervals{std::move(mapping_intervals)}
     {
-        if (mapping_intervals.empty())
+        std::ranges::sort(this->mapping_intervals, {}, &MappingInterval::starting_x);
+    }
+
+    float NoiseMappingFunction::map(float noise_value) const
+    {
+        if (mapping_intervals.size() < 2)
         {
             return noise_value;
         }
 
-        int valid_mapping_interval_index = 0;
-        for (; valid_mapping_interval_index < mapping_intervals.size(); ++valid_mapping_interval_index)
+        if (noise_value <= mapping_intervals.front().starting_x)
         {
-            if (mapping_intervals[valid_mapping_interval_index].starting_x > noise_value)
-            {
-                valid_mapping_interval_index = valid_mapping_interval_index - 1;
-                break;
-            }
+            return mapping_intervals.front().starting_y;
+        }
+        if (noise_value >= mapping_intervals.back().starting_x)
+        {
+            return mapping_intervals.back().starting_y;
         }
 
-        if (valid_mapping_interval_index < 0)
-        {
-            return noise_value;
-        }
+        const auto right = std::ranges::upper_bound(
+            mapping_intervals, noise_value, {}, &MappingInterval::starting_x);
+        const MappingInterval& left_mapping_interval = *std::prev(right);
+        const MappingInterval& right_mapping_interval = *right;
 
-        MappingInterval& left_mapping_interval = mapping_intervals[valid_mapping_interval_index];
-        MappingInterval& right_mapping_interval = mapping_intervals[valid_mapping_interval_index + 1];
+        if (left_mapping_interval.starting_x == right_mapping_interval.starting_x)
+        {
+            return right_mapping_interval.starting_y;
+        }
 
         return glm::mix(
                 left_mapping_interval.starting_y,

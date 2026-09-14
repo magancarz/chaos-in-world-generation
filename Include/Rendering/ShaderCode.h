@@ -23,7 +23,6 @@
 #pragma once
 
 #include <string>
-#include <unordered_map>
 
 #include "Rendering/ShaderType.h"
 
@@ -39,7 +38,7 @@ namespace chs
         [[nodiscard]] const char* getShaderCode() const { return shader_code.c_str(); }
 
     private:
-        static std::string loadShaderCodeFromFile(const char* shader_file_name) ;
+        static std::string loadShaderCodeFromFile(const char* shader_file_name);
 
         std::string shader_code;
     };
