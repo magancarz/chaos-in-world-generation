@@ -10,13 +10,11 @@ layout (location = 0) in vec2 pass_texture_coords[];
 
 layout (location = 0) out vec2 texture_coords[];
 
-void main(void)
-{
+void main(void) {
 	gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;
 	texture_coords[gl_InvocationID] = pass_texture_coords[gl_InvocationID];
 
-	if (gl_InvocationID == 0)
-	{
+	if (gl_InvocationID == 0) {
 		const float MIN_DISTANCE = 20;
 		const float MAX_DISTANCE = 800;
 

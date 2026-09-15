@@ -1,14 +1,14 @@
 #version 460 core
 
 layout (location = 0) in vec3 terrain_color;
-layout (location = 1) in float normalized_height;
+layout (location = 1) in vec3 terrain_normal;
 
-uniform int visualization_mode;
+uniform vec3 sun_position;
 
 out vec4 out_color;
 
-void main(void)
-{
-	vec3 color = visualization_mode == 1 ? vec3(normalized_height) : terrain_color;
-	out_color = vec4(color, 1.0f);
+void main(void) {
+	vec3 color = clamp(dot(sun_position, terrain_normal), 0.0, 1.0)
+                   * terrain_color;
+	out_color = vec4(color, 1.0);
 }

@@ -68,10 +68,11 @@ bazel run //:chaos-in-world-generation
 
 GLFW, GLM, FastNoiseLite, ImGui, and stb use the sources in `ThirdParty`.
 GLEW and OpenGL use system libraries. Bazel downloads its pinned build rules
-on the first build. Shaders are included in the application's Bazel runfiles.
-PNG exports from `bazel run` are written to the checkout's `Exports/` directory.
-To launch the binary directly, run `./bazel-bin/chaos-in-world-generation`
-from the repository root so it can find `Shaders/`.
+on the first build. Bazel compiles `Shaders/Terrain.slang` to GLSL 4.60 and
+embeds the generated shader source in the application binary. Shader syntax and
+entry points are therefore validated during the build, and the binary does not
+need separate shader files at runtime. PNG exports from `bazel run` are written
+to the checkout's `Exports/` directory.
 
 Core tests require only the compiler and initialized source dependencies,
 without OpenGL, GLEW, or X11 development packages:

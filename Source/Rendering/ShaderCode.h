@@ -9,8 +9,8 @@
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -23,18 +23,23 @@
 #pragma once
 
 #include <string>
-#include <vector>
 
-#include "ShaderCode.h"
+#include "Rendering/ShaderType.h"
 
-namespace chs
-{
-    struct ShaderSettings
-    {
-        ShaderCode vertex_shader_code;
-        ShaderCode tesselation_control_shader_code;
-        ShaderCode tesselation_evaluation_shader_code;
-        ShaderCode fragment_shader_code;
-        std::vector<std::string> uniform_variables;
-    };
-}
+namespace chs {
+class ShaderCode {
+ public:
+  static constexpr const char* SHADERS_DIRECTORY{"Shaders"};
+
+  explicit ShaderCode(const char* shader_file_name);
+
+  [[nodiscard]] const char* getShaderCode() const {
+    return shader_code.c_str();
+  }
+
+ private:
+  static std::string loadShaderCodeFromFile(const char* shader_file_name);
+
+  std::string shader_code;
+};
+}  // namespace chs

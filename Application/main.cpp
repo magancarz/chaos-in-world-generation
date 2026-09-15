@@ -199,8 +199,7 @@ int main() {
       .fragment_shader_code = std::move(fragment_shader_code),
       .uniform_variables = {"view", "projection_view", "height_scale",
                             "minimum_tessellation_level",
-                            "maximum_tessellation_level",
-                            "visualization_mode"}};
+                            "maximum_tessellation_level", "sun_position"}};
 
   chs::Shader shader{shader_settings};
 
@@ -258,34 +257,32 @@ int main() {
     noise.SetSeed(world_generation_settings.seed);
     noise.SetFractalOctaves(world_generation_settings.octaves);
 
-    if (world_generation_settings.use_csharp_algorithm) {
-      const std::size_t sample_count =
-          static_cast<std::size_t>(world_generation_settings.map_resolution) *
-          static_cast<std::size_t>(world_generation_settings.map_resolution);
-      std::vector<chs::TerrainSampleC> managed_samples(sample_count);
-      const chs::TerrainGenerationRequestC request{
-          .struct_size = sizeof(chs::TerrainGenerationRequestC),
-          .width = static_cast<std::uint32_t>(
-              world_generation_settings.map_resolution),
-          .height = static_cast<std::uint32_t>(
-              world_generation_settings.map_resolution),
-          .seed = world_generation_settings.seed,
-          .octaves = world_generation_settings.octaves,
-          .x_offset = world_generation_settings.x_coordinate_offset,
-          .y_offset = world_generation_settings.y_coordinate_offset,
-          .noise_context = &noise,
-          .noise_2d = sampleNoiseFromManaged,
-      };
-      if (managed_terrain_host.generate(request, managed_samples.data(),
-                                        managed_samples.size())) {
-        std::vector<glm::vec4> values(sample_count);
-        for (std::size_t index = 0; index < sample_count; ++index) {
-          const chs::TerrainSampleC& sample = managed_samples[index];
-          values[index] =
-              glm::vec4{sample.red, sample.green, sample.blue, sample.height};
-        }
-        return values;
+    const std::size_t sample_count =
+        static_cast<std::size_t>(world_generation_settings.map_resolution) *
+        static_cast<std::size_t>(world_generation_settings.map_resolution);
+    std::vector<chs::TerrainSampleC> managed_samples(sample_count);
+    const chs::TerrainGenerationRequestC request{
+        .struct_size = sizeof(chs::TerrainGenerationRequestC),
+        .width = static_cast<std::uint32_t>(
+            world_generation_settings.map_resolution),
+        .height = static_cast<std::uint32_t>(
+            world_generation_settings.map_resolution),
+        .seed = world_generation_settings.seed,
+        .octaves = world_generation_settings.octaves,
+        .x_offset = world_generation_settings.x_coordinate_offset,
+        .y_offset = world_generation_settings.y_coordinate_offset,
+        .noise_context = &noise,
+        .noise_2d = sampleNoiseFromManaged,
+    };
+    if (managed_terrain_host.generate(request, managed_samples.data(),
+                                      managed_samples.size())) {
+      std::vector<glm::vec4> values(sample_count);
+      for (std::size_t index = 0; index < sample_count; ++index) {
+        const chs::TerrainSampleC& sample = managed_samples[index];
+        values[index] =
+            glm::vec4{sample.red, sample.green, sample.blue, sample.height};
       }
+      return values;
     }
 
     const chs::NoiseMappingFunction height_curve{
@@ -357,7 +354,6 @@ int main() {
         editor.updateGUI(world_generation_settings, terrain_statistics);
     if (editor_actions.build_and_reload_csharp_requested) {
       if (managed_terrain_host.buildAndReload()) {
-        world_generation_settings.use_csharp_algorithm = true;
         regenerate_terrain();
         regeneration_pending = false;
       }
@@ -401,24 +397,15 @@ int main() {
     shader.bindTexture(0, texture);
     shader.loadMatrix("view", view);
     shader.loadMatrix("projection_view", projection_view);
-    const bool color_only = world_generation_settings.visualization_mode ==
-                            chs::TerrainVisualizationMode::ColorOnly;
-    shader.loadFloat(
-        "height_scale",
-        color_only ? 0.0f : world_generation_settings.height_scale);
+    shader.loadFloat("height_scale", world_generation_settings.height_scale);
     shader.loadFloat("minimum_tessellation_level",
                      world_generation_settings.minimum_tessellation_level);
     shader.loadFloat("maximum_tessellation_level",
                      world_generation_settings.maximum_tessellation_level);
-    shader.loadInt("visualization_mode",
-                   world_generation_settings.visualization_mode ==
-                           chs::TerrainVisualizationMode::HeightOnly
-                       ? 1
-                       : 0);
+    shader.loadVec3("sun_position",
+                    glm::normalize(glm::vec3{1.0f, 1.0f, 1.0f}));
 
-    const bool wireframe = world_generation_settings.visualization_mode ==
-                           chs::TerrainVisualizationMode::Wireframe;
-    glPolygonMode(GL_FRONT_AND_BACK, wireframe ? GL_LINE : GL_FILL);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
     if (!primitive_query_in_flight) {
       glBeginQuery(GL_PRIMITIVES_GENERATED, primitive_query);

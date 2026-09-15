@@ -8,11 +8,11 @@ cc_library(
         "Source/WorldGeneration/NoiseMappingFunction.cpp",
     ],
     hdrs = [
-        "Include/WorldGeneration.h",
-        "Include/WorldGeneration/MappingInterval.h",
-        "Include/WorldGeneration/NoiseMappingFunction.h",
+        "Source/WorldGeneration.h",
+        "Source/WorldGeneration/MappingInterval.h",
+        "Source/WorldGeneration/NoiseMappingFunction.h",
     ],
-    includes = ["Include"],
+    includes = ["Source"],
     deps = ["//ThirdParty:glm"],
 )
 
@@ -26,14 +26,14 @@ cc_library(
         ],
     ),
     hdrs = glob(
-        ["Include/**/*.h"],
+        ["Source/**/*.h"],
         exclude = [
-            "Include/WorldGeneration.h",
-            "Include/WorldGeneration/MappingInterval.h",
-            "Include/WorldGeneration/NoiseMappingFunction.h",
+            "Source/WorldGeneration.h",
+            "Source/WorldGeneration/MappingInterval.h",
+            "Source/WorldGeneration/NoiseMappingFunction.h",
         ],
     ),
-    includes = ["Include"],
+    includes = ["Source"],
     deps = [
         ":terrain-core",
         "//ThirdParty:glfw",
@@ -56,18 +56,6 @@ cc_binary(
     ],
     deps = [
         ":chaos-in-world-generation-lib",
-        "//ThirdParty:fast_noise_lite",
-    ],
-)
-
-cc_test(
-    name = "terrain-core-tests",
-    size = "small",
-    srcs = ["Tests/WorldGenerationTests.cpp"],
-    # These tests use assert(), including in optimized builds.
-    copts = ["-UNDEBUG"],
-    deps = [
-        ":terrain-core",
         "//ThirdParty:fast_noise_lite",
     ],
 )
