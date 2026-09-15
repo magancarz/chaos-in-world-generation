@@ -4,7 +4,6 @@ layout (quads, fractional_odd_spacing, ccw) in;
 
 uniform sampler2D height_map;
 uniform mat4 projection_view;
-uniform float height_scale;
 
 layout (location = 0) in vec2 texture_coords[];
 
@@ -25,7 +24,7 @@ void main(void) {
 	vec2 tex_coord = (t1 - t0) * v + t0;
 
 	vec4 terrain_sample = texture(height_map, tex_coord);
-	float height = terrain_sample.a * height_scale;
+	float height = terrain_sample.a;
 	terrain_color = terrain_sample.rgb;
 
 	vec4 p00 = gl_in[0].gl_Position;
@@ -46,10 +45,10 @@ void main(void) {
 	vec2 down_coord = vec2(tex_coord.x, max(tex_coord.y - texel_size.y, 0.0));
 	vec2 up_coord = vec2(tex_coord.x, min(tex_coord.y + texel_size.y, 1.0));
 
-	float left_height = textureLod(height_map, left_coord, 0.0).a * height_scale;
-	float right_height = textureLod(height_map, right_coord, 0.0).a * height_scale;
-	float down_height = textureLod(height_map, down_coord, 0.0).a * height_scale;
-	float up_height = textureLod(height_map, up_coord, 0.0).a * height_scale;
+	float left_height = textureLod(height_map, left_coord, 0.0).a;
+	float right_height = textureLod(height_map, right_coord, 0.0).a;
+	float down_height = textureLod(height_map, down_coord, 0.0).a;
+	float up_height = textureLod(height_map, up_coord, 0.0).a;
 	vec2 height_gradient = vec2(
 		(right_height - left_height) / max(right_coord.x - left_coord.x, 1e-6),
 		(up_height - down_height) / max(up_coord.y - down_coord.y, 1e-6));

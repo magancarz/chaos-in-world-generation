@@ -99,6 +99,7 @@ bool exportTerrainMaps(const std::vector<glm::vec4>& terrain_data, int width,
                              height_data.data(), width, height, 1, width);
   return color_saved && height_saved;
 }
+
 }  // namespace
 
 int main() {
@@ -197,11 +198,19 @@ int main() {
       .tesselation_evaluation_shader_code =
           std::move(tesselation_evaluation_shader_code),
       .fragment_shader_code = std::move(fragment_shader_code),
-      .uniform_variables = {"view", "projection_view", "height_scale",
+      .uniform_variables = {"view", "projection_view",
                             "minimum_tessellation_level",
                             "maximum_tessellation_level", "sun_position"}};
 
   chs::Shader shader{shader_settings};
+
+  chs::ShaderSettings water_shader_settings{
+      .vertex_shader_code = chs::ShaderCode{"Terrain.vert"},
+      .tesselation_control_shader_code = chs::ShaderCode{"Water.tesc"},
+      .tesselation_evaluation_shader_code = chs::ShaderCode{"Water.tese"},
+      .fragment_shader_code = chs::ShaderCode{"Water.frag"},
+      .uniform_variables = {"projection_view", "water_height"}};
+  chs::Shader water_shader{water_shader_settings};
 
   chs::ShaderSettings skybox_shader_settings{
       .vertex_shader_code = chs::ShaderCode{"Skybox.vert"},
@@ -249,32 +258,19 @@ int main() {
   skybox_vertices_description.source_buffer = &skybox_vertex_buffer;
   chs::VertexArray skybox_vertex_array{{skybox_vertices_description}, 24};
 
-  static constexpr unsigned int NUM_OF_MAPPING_INTERVALS = 7;
+  static constexpr unsigned int NUM_OF_MAPPING_INTERVALS = 11;
   world_generation_settings.mapping_intervals.resize(NUM_OF_MAPPING_INTERVALS);
 
-  world_generation_settings.mapping_intervals[0].starting_x = 0.0f;
-  world_generation_settings.mapping_intervals[0].starting_y = 0.0f;
-
-  world_generation_settings.mapping_intervals[1].starting_x = 0.1f;
-  world_generation_settings.mapping_intervals[1].starting_y = 0.365f;
-
-  world_generation_settings.mapping_intervals[2].starting_x = 0.495f;
-  world_generation_settings.mapping_intervals[2].starting_y = 0.063f;
-
-  world_generation_settings.mapping_intervals[3].starting_x = 0.51f;
-  world_generation_settings.mapping_intervals[3].starting_y = 0.028f;
-
-  world_generation_settings.mapping_intervals[4].starting_x = 0.525f;
-  world_generation_settings.mapping_intervals[4].starting_y = 0.051f;
-
-  world_generation_settings.mapping_intervals[5].starting_x = 0.8f;
-  world_generation_settings.mapping_intervals[5].starting_y = 0.227f;
-
-  world_generation_settings.mapping_intervals[6].starting_x = 1.0f;
-  world_generation_settings.mapping_intervals[6].starting_y = 1.0f;
+  for (int i = 0; i < NUM_OF_MAPPING_INTERVALS; ++i) {
+    world_generation_settings.mapping_intervals[i].starting_x =
+        static_cast<float>(i) / (NUM_OF_MAPPING_INTERVALS - 1);
+    world_generation_settings.mapping_intervals[i].starting_y =
+        static_cast<float>(i) / (NUM_OF_MAPPING_INTERVALS - 1);
+  }
 
   // This is the extension point for terrain experiments. Any callable with
   // this signature can provide height and color for a sampled grid position.
+  std::ignore = managed_terrain_host.buildAndReload();
   const auto generate_terrain = [&]() {
     world_generation.setWidth(
         static_cast<unsigned int>(world_generation_settings.map_resolution));
@@ -287,6 +283,13 @@ int main() {
         static_cast<std::size_t>(world_generation_settings.map_resolution) *
         static_cast<std::size_t>(world_generation_settings.map_resolution);
     std::vector<chs::TerrainSampleC> managed_samples(sample_count);
+    std::vector<chs::TerrainMappingPointC> managed_mapping_points;
+    managed_mapping_points.reserve(
+        world_generation_settings.mapping_intervals.size());
+    for (const chs::MappingInterval& point :
+         world_generation_settings.mapping_intervals) {
+      managed_mapping_points.push_back({point.starting_x, point.starting_y});
+    }
     const chs::TerrainGenerationRequestC request{
         .struct_size = sizeof(chs::TerrainGenerationRequestC),
         .width = static_cast<std::uint32_t>(
@@ -299,7 +302,10 @@ int main() {
         .y_offset = world_generation_settings.y_coordinate_offset,
         .noise_context = &noise,
         .noise_2d = sampleNoiseFromManaged,
-    };
+        .mapping_points = managed_mapping_points.data(),
+        .mapping_point_count =
+            static_cast<std::uint32_t>(managed_mapping_points.size()),
+        .water_level = world_generation_settings.water_height};
     if (managed_terrain_host.generate(request, managed_samples.data(),
                                       managed_samples.size())) {
       std::vector<glm::vec4> values(sample_count);
@@ -423,7 +429,6 @@ int main() {
     shader.bindTexture(0, texture);
     shader.loadMatrix("view", view);
     shader.loadMatrix("projection_view", projection_view);
-    shader.loadFloat("height_scale", world_generation_settings.height_scale);
     shader.loadFloat("minimum_tessellation_level",
                      world_generation_settings.minimum_tessellation_level);
     shader.loadFloat("maximum_tessellation_level",
@@ -461,6 +466,20 @@ int main() {
     skybox_shader.unbind();
     glDepthMask(GL_TRUE);
     glDepthFunc(GL_LESS);
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glDepthMask(GL_FALSE);
+    water_shader.bind();
+    vertex_array.bind();
+    water_shader.loadMatrix("projection_view", projection_view);
+    water_shader.loadFloat("water_height",
+                           world_generation_settings.water_height);
+    vertex_array.draw();
+    vertex_array.unbind();
+    water_shader.unbind();
+    glDepthMask(GL_TRUE);
+    glDisable(GL_BLEND);
 
     editor.drawGUI();
 

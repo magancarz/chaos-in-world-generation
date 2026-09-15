@@ -23,10 +23,10 @@ texture. The tessellation evaluation shader reads alpha for displacement and
 passes RGB to the fragment shader. `Application/main.cpp` contains a complete
 FastNoiseLite example with an editable height curve.
 
-The settings window provides seed, octave, resolution, height-scale, and
-tessellation controls; solid, wireframe, height-only, and color-only views; generation
-timing and triangle statistics; automatic debounced or manual regeneration; and
-PNG export to `Exports/terrain_color.png` and `Exports/terrain_height.png`.
+The settings window provides seed, octave, resolution, height-scale, water-level,
+and tessellation controls; generation timing and triangle statistics; automatic
+debounced or manual regeneration; and PNG export to
+`Exports/terrain_color.png` and `Exports/terrain_height.png`.
 
 ## C# terrain algorithm hot reload
 

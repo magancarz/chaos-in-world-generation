@@ -113,8 +113,10 @@ EditorActions Editor::updateGUIElements(
                      terrain_statistics.managed_algorithm_status.c_str());
 
   ImGui::SeparatorText("Rendering");
-  ImGui::SliderFloat("Height Scale", &world_generation_settings.height_scale,
-                     0.0f, 32.0f, "%.1f");
+  if (ImGui::InputFloat("Water Height", &world_generation_settings.water_height,
+                        0.1f, 1.0f, "%.2f")) {
+    actions.terrain_settings_changed = true;
+  }
   if (ImGui::SliderFloat("Minimum Tessellation",
                          &world_generation_settings.minimum_tessellation_level,
                          1.0f, 64.0f, "%.0f")) {

@@ -9,8 +9,8 @@
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -25,31 +25,36 @@
 #include <cstddef>
 #include <cstdint>
 
-namespace chs
-{
-    inline constexpr std::uint32_t TERRAIN_MANAGED_ABI_VERSION = 1;
+namespace chs {
+inline constexpr std::uint32_t TERRAIN_MANAGED_ABI_VERSION = 3;
 
-    using TerrainNoise2DFunction = float (*)(void* context, float x, float y);
+using TerrainNoise2DFunction = float (*)(void* context, float x, float y);
 
-    struct TerrainGenerationRequestC
-    {
-        std::uint32_t abi_version{TERRAIN_MANAGED_ABI_VERSION};
-        std::uint32_t struct_size{0};
-        std::uint32_t width{0};
-        std::uint32_t height{0};
-        std::int32_t seed{0};
-        std::int32_t octaves{0};
-        float x_offset{0.0f};
-        float y_offset{0.0f};
-        void* noise_context{nullptr};
-        TerrainNoise2DFunction noise_2d{nullptr};
-    };
+struct TerrainMappingPointC {
+  float x{0.0f};
+  float y{0.0f};
+};
 
-    struct TerrainSampleC
-    {
-        float red{0.0f};
-        float green{0.0f};
-        float blue{0.0f};
-        float height{0.0f};
-    };
-}
+struct TerrainGenerationRequestC {
+  std::uint32_t abi_version{TERRAIN_MANAGED_ABI_VERSION};
+  std::uint32_t struct_size{0};
+  std::uint32_t width{0};
+  std::uint32_t height{0};
+  std::int32_t seed{0};
+  std::int32_t octaves{0};
+  float x_offset{0.0f};
+  float y_offset{0.0f};
+  void* noise_context{nullptr};
+  TerrainNoise2DFunction noise_2d{nullptr};
+  const TerrainMappingPointC* mapping_points{nullptr};
+  std::uint32_t mapping_point_count{0};
+  float water_level = 0.1f;
+};
+
+struct TerrainSampleC {
+  float red{0.0f};
+  float green{0.0f};
+  float blue{0.0f};
+  float height{0.0f};
+};
+}  // namespace chs
