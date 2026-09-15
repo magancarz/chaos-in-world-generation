@@ -23,6 +23,7 @@
 #pragma once
 
 #include <cstdint>
+#include <string>
 #include <vector>
 
 #include "MappingInterval.h"
@@ -45,6 +46,7 @@ namespace chs
         int octaves{8};
         int map_resolution{512};
         std::vector<MappingInterval> mapping_intervals;
+        bool use_csharp_algorithm{false};
 
         float height_scale{8.0f};
         float minimum_tessellation_level{4.0f};
@@ -61,5 +63,6 @@ namespace chs
         std::uint64_t sample_count{0};
         std::uint64_t triangle_count{0};
         const char* export_status{"Not exported"};
+        std::string managed_algorithm_status{"C# algorithm not loaded"};
     };
 }

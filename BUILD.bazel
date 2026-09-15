@@ -1,4 +1,5 @@
 load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_test")
+load("@hedron_compile_commands//:refresh_compile_commands.bzl", "refresh_compile_commands")
 
 cc_library(
     name = "terrain-core",
@@ -41,12 +42,18 @@ cc_library(
         "//ThirdParty:opengl",
         "//ThirdParty:stb",
     ],
+    linkopts = ["-ldl"],
 )
 
 cc_binary(
     name = "chaos-in-world-generation",
     srcs = ["Application/main.cpp"],
-    data = glob(["Shaders/*"]),
+    data = glob(["Shaders/*"]) + [
+        "//Managed:Terrain.Algorithm",
+        "//Managed:Terrain.Bridge",
+        "//Managed:managed_sources",
+        "@rules_dotnet//dotnet:resolved_toolchain",
+    ],
     deps = [
         ":chaos-in-world-generation-lib",
         "//ThirdParty:fast_noise_lite",
@@ -63,4 +70,12 @@ cc_test(
         ":terrain-core",
         "//ThirdParty:fast_noise_lite",
     ],
+)
+
+refresh_compile_commands(
+    name = "refresh_compile_commands",
+    exclude_external_sources = True,
+    targets = {
+        "//:chaos-in-world-generation": "-c opt",
+    },
 )

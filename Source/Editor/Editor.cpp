@@ -110,6 +110,15 @@ namespace chs
             actions.terrain_settings_changed = true;
         }
 
+        ImGui::SeparatorText("Terrain Algorithm");
+        if (ImGui::Checkbox("Use C# algorithm", &world_generation_settings.use_csharp_algorithm))
+        {
+            actions.terrain_settings_changed = true;
+        }
+        actions.build_and_reload_csharp_requested = ImGui::Button("Build and reload C#");
+        ImGui::TextDisabled("Managed/Terrain.Algorithm/TerrainAlgorithm.cs");
+        ImGui::TextWrapped("C# status: %s", terrain_statistics.managed_algorithm_status.c_str());
+
         ImGui::SeparatorText("Rendering");
         ImGui::SliderFloat("Height Scale", &world_generation_settings.height_scale, 0.0f, 32.0f, "%.1f");
         if (ImGui::SliderFloat("Minimum Tessellation", &world_generation_settings.minimum_tessellation_level, 1.0f, 64.0f, "%.0f"))

@@ -9,3 +9,6 @@ Debug/
 /build-*/
 /Exports/
 /imgui.ini
+/Managed/Build/
+/Managed/**/bin/
+/Managed/**/obj/

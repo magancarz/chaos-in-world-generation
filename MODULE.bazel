@@ -4,4 +4,20 @@ module(
 )
 
 bazel_dep(name = "rules_cc", version = "0.2.11")
-bazel_dep(name = "platforms", version = "0.0.10")
+# rules_dotnet 0.19.2 supports the repository's Bazel 7 toolchain.
+bazel_dep(name = "rules_dotnet", version = "0.19.2")
+bazel_dep(name = "platforms", version = "1.0.0")
+
+dotnet = use_extension("@rules_dotnet//dotnet:extensions.bzl", "dotnet")
+dotnet.toolchain(dotnet_version = "8.0.410")
+use_repo(dotnet, "dotnet_toolchains")
+register_toolchains("@dotnet_toolchains//:all")
+
+# Hedron's Compile Commands Extractor for Bazel
+# https://github.com/hedronvision/bazel-compile-commands-extractor
+bazel_dep(name = "hedron_compile_commands", dev_dependency = True)
+git_override(
+    module_name = "hedron_compile_commands",
+    commit = "7fe1eab26d2b8eeb5e1c6a2f38bddb001e3f9696",
+    remote = "https://github.com/hedronvision/bazel-compile-commands-extractor.git",
+)

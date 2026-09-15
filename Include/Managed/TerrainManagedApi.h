@@ -22,36 +22,34 @@
 
 #pragma once
 
-#include "Window/Window.h"
-#include "WorldGeneration/WorldGenerationSettings.h"
+#include <cstddef>
+#include <cstdint>
 
 namespace chs
 {
-    struct EditorActions
+    inline constexpr std::uint32_t TERRAIN_MANAGED_ABI_VERSION = 1;
+
+    using TerrainNoise2DFunction = float (*)(void* context, float x, float y);
+
+    struct TerrainGenerationRequestC
     {
-        bool terrain_settings_changed{false};
-        bool regenerate_requested{false};
-        bool export_requested{false};
-        bool build_and_reload_csharp_requested{false};
+        std::uint32_t abi_version{TERRAIN_MANAGED_ABI_VERSION};
+        std::uint32_t struct_size{0};
+        std::uint32_t width{0};
+        std::uint32_t height{0};
+        std::int32_t seed{0};
+        std::int32_t octaves{0};
+        float x_offset{0.0f};
+        float y_offset{0.0f};
+        void* noise_context{nullptr};
+        TerrainNoise2DFunction noise_2d{nullptr};
     };
 
-    class Editor
+    struct TerrainSampleC
     {
-    public:
-        explicit Editor(Window& window);
-        ~Editor();
-
-        [[nodiscard]] EditorActions updateGUI(
-            WorldGenerationSettings& world_generation_settings,
-            const TerrainStatistics& terrain_statistics);
-        void drawGUI() const;
-
-    private:
-        void initializeGraphicalInterface(Window& window);
-    
-        void beginNewFrame() const;
-        [[nodiscard]] EditorActions updateGUIElements(
-            WorldGenerationSettings& world_generation_settings,
-            const TerrainStatistics& terrain_statistics) const;
+        float red{0.0f};
+        float green{0.0f};
+        float blue{0.0f};
+        float height{0.0f};
     };
 }

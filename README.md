@@ -28,6 +28,22 @@ tessellation controls; solid, wireframe, height-only, and color-only views; gene
 timing and triangle statistics; automatic debounced or manual regeneration; and
 PNG export to `Exports/terrain_color.png` and `Exports/terrain_height.png`.
 
+## C# terrain algorithm hot reload
+
+The settings window can build and hot-reload
+`Managed/Terrain.Algorithm/TerrainAlgorithm.cs`. The C++ application hosts .NET,
+keeps a stable managed bridge loaded, and replaces the algorithm in a collectible
+assembly context. The sample C# algorithm calls FastNoiseLite through a native
+function pointer supplied by the C++ engine.
+
+The Bazel build uses `rules_dotnet` to download a pinned .NET 8 SDK and compile
+the managed targets, so a system-wide .NET installation is not required. Run
+the application from the workspace and press `Build and reload C#`. The reload
+control uses the same SDK from the Bazel runfiles. A successful build
+automatically enables the C# algorithm and regenerates the terrain. Compilation
+and runtime errors are shown in the settings window; the previous working
+algorithm remains loaded after a failed reload.
+
 ## Build
 
 Use Bazelisk (which selects Bazel 7.7.1 from `.bazelversion`) and a C++23

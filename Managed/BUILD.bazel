@@ -1,0 +1,39 @@
+load("@rules_dotnet//dotnet:defs.bzl", "csharp_library")
+
+filegroup(
+    name = "managed_sources",
+    srcs = glob([
+        "**/*.cs",
+        "**/*.csproj",
+    ], exclude = [
+        "**/bin/**",
+        "**/obj/**",
+    ]),
+    visibility = ["//visibility:public"],
+)
+
+csharp_library(
+    name = "Terrain.Abstractions",
+    srcs = ["Terrain.Abstractions/TerrainApi.cs"],
+    allow_unsafe_blocks = True,
+    target_frameworks = ["net8.0"],
+    visibility = ["//visibility:public"],
+)
+
+csharp_library(
+    name = "Terrain.Bridge",
+    srcs = ["Terrain.Bridge/NativeApi.cs"],
+    allow_unsafe_blocks = True,
+    target_frameworks = ["net8.0"],
+    deps = [":Terrain.Abstractions"],
+    visibility = ["//visibility:public"],
+)
+
+csharp_library(
+    name = "Terrain.Algorithm",
+    srcs = ["Terrain.Algorithm/TerrainAlgorithm.cs"],
+    allow_unsafe_blocks = True,
+    target_frameworks = ["net8.0"],
+    deps = [":Terrain.Abstractions"],
+    visibility = ["//visibility:public"],
+)
