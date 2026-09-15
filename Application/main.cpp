@@ -203,6 +203,14 @@ int main() {
 
   chs::Shader shader{shader_settings};
 
+  chs::ShaderSettings skybox_shader_settings{
+      .vertex_shader_code = chs::ShaderCode{"Skybox.vert"},
+      .tesselation_control_shader_code = chs::ShaderCode{"Skybox.tesc"},
+      .tesselation_evaluation_shader_code = chs::ShaderCode{"Skybox.tese"},
+      .fragment_shader_code = chs::ShaderCode{"Skybox.frag"},
+      .uniform_variables = {"projection_view_rotation", "sun_direction"}};
+  chs::Shader skybox_shader{skybox_shader_settings};
+
   chs::VertexBuffer vertices{};
   vertices.bindData(terrain_vertices.size() * sizeof(float),
                     terrain_vertices.data());
@@ -222,6 +230,24 @@ int main() {
   chs::VertexArray vertex_array{
       {vertices_description, texture_coords_description},
       4 * resolution * resolution};
+
+  std::vector<float> skybox_vertices{
+      -1.0f, -1.0f, -1.0f, 1.0f,  -1.0f, -1.0f, -1.0f, 1.0f,  -1.0f,
+      1.0f,  1.0f,  -1.0f, 1.0f,  -1.0f, 1.0f,  -1.0f, -1.0f, 1.0f,
+      1.0f,  1.0f,  1.0f,  -1.0f, 1.0f,  1.0f,  -1.0f, -1.0f, 1.0f,
+      -1.0f, -1.0f, -1.0f, -1.0f, 1.0f,  1.0f,  -1.0f, 1.0f,  -1.0f,
+      1.0f,  -1.0f, -1.0f, 1.0f,  -1.0f, 1.0f,  1.0f,  1.0f,  -1.0f,
+      1.0f,  1.0f,  1.0f,  -1.0f, 1.0f,  -1.0f, 1.0f,  1.0f,  -1.0f,
+      -1.0f, 1.0f,  1.0f,  1.0f,  1.0f,  1.0f,  -1.0f, -1.0f, 1.0f,
+      1.0f,  -1.0f, 1.0f,  -1.0f, -1.0f, -1.0f, 1.0f,  -1.0f, -1.0f};
+  chs::VertexBuffer skybox_vertex_buffer{};
+  skybox_vertex_buffer.bindData(skybox_vertices.size() * sizeof(float),
+                                skybox_vertices.data());
+  chs::VertexArrayEntry skybox_vertices_description{};
+  skybox_vertices_description.attribute_size = 3;
+  skybox_vertices_description.instance_stride = 3 * sizeof(float);
+  skybox_vertices_description.source_buffer = &skybox_vertex_buffer;
+  chs::VertexArray skybox_vertex_array{{skybox_vertices_description}, 24};
 
   static constexpr unsigned int NUM_OF_MAPPING_INTERVALS = 7;
   world_generation_settings.mapping_intervals.resize(NUM_OF_MAPPING_INTERVALS);
@@ -419,6 +445,22 @@ int main() {
 
     vertex_array.unbind();
     shader.unbind();
+
+    const glm::mat4 skybox_projection_view =
+        projection * glm::mat4{glm::mat3{view}};
+    glDepthFunc(GL_LEQUAL);
+    glDepthMask(GL_FALSE);
+    skybox_shader.bind();
+    skybox_vertex_array.bind();
+    skybox_shader.loadMatrix("projection_view_rotation",
+                             skybox_projection_view);
+    skybox_shader.loadVec3("sun_direction",
+                           glm::normalize(glm::vec3{1.0f, 1.0f, 1.0f}));
+    skybox_vertex_array.draw();
+    skybox_vertex_array.unbind();
+    skybox_shader.unbind();
+    glDepthMask(GL_TRUE);
+    glDepthFunc(GL_LESS);
 
     editor.drawGUI();
 
