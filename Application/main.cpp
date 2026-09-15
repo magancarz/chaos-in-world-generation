@@ -20,6 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#include <algorithm>
 #include <chrono>
 #include <cmath>
 #include <cstdint>
@@ -342,6 +343,19 @@ int main() {
                                                   generation_started)
             .count();
     terrain_statistics.sample_count = terrain_data.size();
+    if (terrain_data.empty()) {
+      terrain_statistics.minimum_generated_height = 0.0f;
+      terrain_statistics.maximum_generated_height = 0.0f;
+    } else {
+      terrain_statistics.minimum_generated_height = terrain_data.front().a;
+      terrain_statistics.maximum_generated_height = terrain_data.front().a;
+      for (const glm::vec4& sample : terrain_data) {
+        terrain_statistics.minimum_generated_height =
+            std::min(terrain_statistics.minimum_generated_height, sample.a);
+        terrain_statistics.maximum_generated_height =
+            std::max(terrain_statistics.maximum_generated_height, sample.a);
+      }
+    }
     terrain_statistics.managed_algorithm_status = managed_terrain_host.status();
     generated_resolution = world_generation_settings.map_resolution;
     texture.bindData(static_cast<unsigned int>(generated_resolution),

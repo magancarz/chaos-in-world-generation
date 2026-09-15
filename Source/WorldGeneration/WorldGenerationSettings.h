@@ -51,6 +51,8 @@ struct TerrainStatistics {
   double generation_time_ms = 0.0;
   std::uint64_t sample_count = 0;
   std::uint64_t triangle_count = 0;
+  float minimum_generated_height = 0.0f;
+  float maximum_generated_height = 0.0f;
   const char* export_status = "Not exported";
   std::string managed_algorithm_status = "C# algorithm not loaded";
 };

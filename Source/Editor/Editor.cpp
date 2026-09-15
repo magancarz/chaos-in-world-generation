@@ -148,6 +148,10 @@ EditorActions Editor::updateGUIElements(
   ImGui::Text("Generation: %.2f ms", terrain_statistics.generation_time_ms);
   ImGui::Text("Samples: %llu",
               static_cast<unsigned long long>(terrain_statistics.sample_count));
+  ImGui::Text("Minimum height: %.3f",
+              terrain_statistics.minimum_generated_height);
+  ImGui::Text("Maximum height: %.3f",
+              terrain_statistics.maximum_generated_height);
   ImGui::Text("Triangles: %llu", static_cast<unsigned long long>(
                                      terrain_statistics.triangle_count));
   ImGui::Text("Frame rate: %.1f FPS", ImGui::GetIO().Framerate);
