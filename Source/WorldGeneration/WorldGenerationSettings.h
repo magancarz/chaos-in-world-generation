@@ -38,6 +38,7 @@ struct WorldGenerationSettings {
   int map_resolution = 512;
 
   std::vector<MappingInterval> mapping_intervals;
+  float unit_size = 1.0f;
 
   float water_height = 0.6f;
   float minimum_tessellation_level = 4.0f;

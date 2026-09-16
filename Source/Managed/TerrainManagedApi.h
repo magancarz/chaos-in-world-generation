@@ -49,6 +49,7 @@ struct TerrainGenerationRequestC {
   const TerrainMappingPointC* mapping_points{nullptr};
   std::uint32_t mapping_point_count{0};
   float water_level = 0.1f;
+  float unit_size = 1.0f;
 };
 
 struct TerrainSampleC {

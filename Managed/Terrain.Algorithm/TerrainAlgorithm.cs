@@ -30,20 +30,20 @@ public sealed unsafe class TerrainAlgorithm : ITerrainAlgorithm
       mappingPoints[index] = request->MappingPoints[index];
     Array.Sort(mappingPoints, static (left, right) => left.X.CompareTo(right.X));
 
-    for (uint y = 0; y < request->Height; ++y)
+    for (int y = 0; y < request->Height; ++y)
     {
-      for (uint x = 0; x < request->Width; ++x)
+      for (int x = 0; x < request->Width; ++x)
       {
+        (float mapped_x, float mapped_y) = FindPosition(
+            request->UnitSize, request->XOffset + x, request->YOffset + y);
         float rawNoise = request->Noise2D(
-            request->NoiseContext,
-            request->XOffset + x,
-            request->YOffset + y);
+            request->NoiseContext, mapped_x, mapped_y);
         float normalizedNoise = rawNoise * 0.5f + 0.5f;
         float height = Math.Clamp(
             MapHeight(mappingPoints, normalizedNoise), 0.0f, 1.0f);
         (float red, float green, float blue) = ColorForHeight(
             request->WaterLevel, height);
-        nuint index = (nuint)y * request->Width + x;
+        nuint index = (nuint)y * request->Width + (nuint)x;
         output[index] = new TerrainSample
         {
           Red = red,
@@ -54,6 +54,12 @@ public sealed unsafe class TerrainAlgorithm : ITerrainAlgorithm
       }
     }
     return 0;
+  }
+
+  private static (float x, float y) FindPosition(
+      float unit_size, float x_coord, float y_coord)
+  {
+    return (x_coord * unit_size, y_coord * unit_size);
   }
 
   private static float MapHeight(

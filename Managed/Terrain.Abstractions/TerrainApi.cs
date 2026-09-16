@@ -32,7 +32,8 @@ public unsafe struct TerrainGenerationRequest
   public delegate* unmanaged[Cdecl]<void*, float, float, float> Noise2D;
   public TerrainMappingPoint* MappingPoints;
   public uint MappingPointCount;
-  public float WaterLevel;
+  public float WaterLevel;  // Water level in meters.
+  public float UnitSize;  // Unit size in meters.
 }
 
 [StructLayout(LayoutKind.Sequential)]

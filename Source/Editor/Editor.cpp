@@ -28,6 +28,7 @@
 #include "imgui/bezie.h"
 #include "imgui/imgui_impl_glfw.h"
 #include "imgui/imgui_impl_opengl3.h"
+#include <imgui.h>
 
 namespace chs {
 
@@ -105,6 +106,9 @@ EditorActions Editor::updateGUIElements(
                    world_generation_settings.mapping_intervals.size())) {
     actions.terrain_settings_changed = true;
   }
+
+  actions.terrain_settings_changed |=
+      ImGui::InputFloat("Unit size", &world_generation_settings.unit_size);
 
   ImGui::SeparatorText("Terrain Algorithm");
   actions.build_and_reload_csharp_requested = ImGui::Button("Build and reload");

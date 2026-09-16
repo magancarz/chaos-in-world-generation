@@ -306,7 +306,8 @@ int main() {
         .mapping_points = managed_mapping_points.data(),
         .mapping_point_count =
             static_cast<std::uint32_t>(managed_mapping_points.size()),
-        .water_level = world_generation_settings.water_height};
+        .water_level = world_generation_settings.water_height,
+        .unit_size = world_generation_settings.unit_size};
     if (managed_terrain_host.generate(request, managed_samples.data(),
                                       managed_samples.size())) {
       std::vector<glm::vec4> values(sample_count);
